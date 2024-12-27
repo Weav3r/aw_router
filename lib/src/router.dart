@@ -5,16 +5,16 @@ import 'response.dart';
 import 'route/route.dart';
 import 'route/route_entry.dart';
 
-class MRouteHandler {
+class Router {
   // final Map<String, List<Middleware>> routes = {};
   final dynamic _context;
   final dynamic log;
   // final Response _outResponse = Response();
   final List<RouteEntry> _mRoutes = [];
 
-  MRouteHandler._(this._context, this.log);
-  factory MRouteHandler(dynamic context) {
-    return MRouteHandler._(context, context.log);
+  Router._(this._context, this.log);
+  factory Router(dynamic context) {
+    return Router._(context, context.log);
   }
 
   /// Mount a handler below a prefix.

@@ -56,15 +56,14 @@ Future<dynamic> main(final context) async {
     routeHandler.get('/users/<userId|[0-9]+>', (req, id) {
       log("I'm in the user with id");
       return Response.ok(
-        "Here's your user id $id modify()",
-      );
+          {'id': id, 'name': 'Jon Doe', 'verified': true, 'age': 23});
     });
 
     // routeHandler.mount('/api/', Api(context).router.call);
 
     routeHandler.all('/<chaff|.*>', middlewares: [sooo(), s1(), foo],
         (req) async {
-      return Response(body: "Sorry, I'm Default modify(${req.context})");
+      return Response(body: "[AWR] Sorry, I'm Default modify(${req.context})");
       // return Response(body: "Sorry, I'm Default modify()", code: 404);
     });
 
