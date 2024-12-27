@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'dart:async';
+
 import '../middleware.dart';
 import 'route.dart';
 import '../pipeline.dart';
@@ -91,7 +93,8 @@ params: $params
     return params;
   }
 
-  Future<Response> invoke(Request request, Map<String, String>? params) async {
+  FutureOr<Response> invoke(
+      Request request, Map<String, String>? params) async {
     var p = Pipeline();
     for (final m in middlewares) {
       p = p.addMid(m);
