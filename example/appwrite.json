@@ -1,0 +1,21 @@
+{
+  "projectId": "660b7f66f282093298a",
+  "projectName": "aw_router",
+  "functions": [
+    {
+      "$id": "6610c229c5e5045f076b",
+      "name": "awr_function",
+      "runtime": "dart-3.3",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "lib/main.dart",
+      "commands": "dart pub get",
+      "ignore": [".packages", ".dart_tool"],
+      "path": "."
+    }
+  ]
+}

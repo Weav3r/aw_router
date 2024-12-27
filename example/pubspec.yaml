@@ -1,0 +1,14 @@
+name: awr_example
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  aw_router:
+    path: "/home/ernest/Projects/aw_router/"
+  dart_appwrite: 12.1.0
+
+dev_dependencies:
+  lints: ^2.0.0
