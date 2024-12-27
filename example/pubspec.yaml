@@ -7,7 +7,12 @@ environment:
 
 dependencies:
   aw_router:
-    path: "/home/ernest/Projects/aw_router/"
+    git:
+      url: "https://github.com/Weav3r/aw_router.git"
+      ref: main
+      # path: dart/appwrouter
+  # aw_router:
+  #   path: "/home/ernest/Projects/aw_router/"
   dart_appwrite: 12.1.0
 
 dev_dependencies:
