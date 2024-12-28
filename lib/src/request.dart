@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: avoid_dynamic_calls
 
+import 'dart:convert';
+
 /// {@template my_request}
 /// A class that represents the request object.
 /// {@endtemplate}
@@ -22,11 +24,20 @@ class Request {
     this.params = const <String, dynamic>{},
   });
 
+  static Map<String, dynamic> _tempBodyJson(dynamic request) {
+    try {
+      return request.bodyJson;
+    } catch (_) {
+      // print('+++++++++++++++Decoding error $e $st');
+      return {};
+    }
+  }
+
   /// Parsing the Request from Appwrite,
   factory Request.parse(dynamic req) {
     return Request(
       bodyText: req.bodyRaw as String,
-      bodyJson: (req.bodyJson as Map<String, dynamic>?) ?? {},
+      bodyJson: _tempBodyJson(req),
       headers: req.headers as Map<String, dynamic>,
       scheme: req.scheme as dynamic,
       method: req.method as String,
