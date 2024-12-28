@@ -17,3 +17,8 @@ dependencies:
 
 dev_dependencies:
   lints: ^2.0.0
+#
+#
+dependency_overrides:
+  aw_router:
+    path: "/home/ernest/Projects/aw_router/"

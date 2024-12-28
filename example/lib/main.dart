@@ -1,9 +1,10 @@
 import 'package:aw_router/aw_router.dart';
+import 'package:awr_example/users.dart';
 
 Future<dynamic> main(final context) async {
   try {
     final log = context.log;
-    final routeHandler = MRouteHandler(context);
+    final router = Router(context);
 
     foo(RequestHandler handler) {
       return (Request request) async {
@@ -42,7 +43,7 @@ Future<dynamic> main(final context) async {
       };
     }
 
-    routeHandler.get('/users', (Request req) {
+    router.get('/', (Request req) {
       // if (res case Response _) {
       // res.modify(body: "You got users root with modify()");
       // }
@@ -53,26 +54,21 @@ Future<dynamic> main(final context) async {
       return res;
     });
 
-    routeHandler.get('/users/<userId|[0-9]+>', (req, id) {
-      log("I'm in the user with id");
-      return Response.ok(
-          {'id': id, 'name': 'Jon Doe', 'verified': true, 'age': 23});
-    });
+    router.mount('/users/', UsersRouter(context).router.call);
 
-    // routeHandler.mount('/api/', Api(context).router.call);
-
-    routeHandler.all('/<chaff|.*>', middlewares: [sooo(), s1(), foo],
-        (req) async {
+    router.all('/<chaff|.*>', middlewares: [sooo(), s1(), foo], (req) async {
       return Response(body: "[AWR] Sorry, I'm Default modify(${req.context})");
       // return Response(body: "Sorry, I'm Default modify()", code: 404);
     });
 
-    // final res =
-    //     await Wrapr().addMid(sooo()).last(routeHandler.call())(context.req);
+    final Response res =
+        await Pipeline().addMid(sooo()).last(router.call)(context.req);
+    return res;
+    // await Pipeline().addMid(sooo()).last(router.call(null))(context.req);
     // log("Finoooi ${res.body}");
 
     // return res.modify(body: 'Helooo me').resBody(context.res);
-    return (await routeHandler.call(null)).response(context.res);
+    // return (await router.call(null)).response(context.res);
     // return context.res.text('Handled successfully');
   } catch (e, st) {
     context.error('Error occured  $e --- $st');
