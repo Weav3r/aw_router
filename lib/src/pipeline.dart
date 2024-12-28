@@ -17,9 +17,9 @@ class Pipeline {
   // }
 
 // b(c(d(h())))
-  Pipeline addMid(Middleware mid) => Pipeline(p: mid, c: last);
+  Pipeline addMiddleware(Middleware mid) => Pipeline(p: mid, c: handler);
   // Pipeline addMid(MyMid mid) => Pipeline(child: mid,  last);
-  RequestHandler last(RequestHandler h) {
+  RequestHandler handler(RequestHandler h) {
     // return parent(child(c));
     return parent(middleware(h));
   }

@@ -97,9 +97,9 @@ params: $params
       Request request, Map<String, String>? params) async {
     var p = Pipeline();
     for (final m in middlewares) {
-      p = p.addMid(m);
+      p = p.addMiddleware(m);
     }
-    return await p.last((req) async {
+    return await p.handler((req) async {
       if (handler is RequestHandler || _params.isEmpty) {
         print('####### invoking RequestHandler with no params');
         return await handler(req) as Response;

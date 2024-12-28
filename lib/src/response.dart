@@ -24,7 +24,7 @@ class Response {
     return Response._(body ?? _body, code ?? _statusCode);
   }
 
-  dynamic response(dynamic response) {
+  dynamic runtimeResponse(dynamic response) {
     return switch (body) {
       String _ => response.text(body, _statusCode),
       Map _ => response.json(body, _statusCode),

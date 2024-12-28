@@ -82,9 +82,13 @@ class Router {
     // routes[path] = middlewares ?? [];
   }
 
-  Future<Response> call(Request? reqst) async {
+  /// The [reqst] parameter is to ensure the function signature conforms to
+  /// [RequestHandler]. Thus this method can be called in `mount()` and in a
+  /// `Pipeline.handler()`
+  Future<Response> call([Request? reqst]) async {
     log('Context path ${_context.req.path}');
-    Request request = reqst ?? Request.parse(_context.req);
+    Request request = Request.parse(_context.req);
+    // Request request = reqst ?? Request.parse(_context.req);
     // dynamic response = context.res;
     String path = request.path;
     String method = request.method;

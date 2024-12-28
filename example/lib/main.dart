@@ -48,8 +48,7 @@ Future<dynamic> main(final context) async {
       // res.modify(body: "You got users root with modify()");
       // }
       log("Request runtime type: $req");
-      final res = Response()
-          .modify(body: "You got users root with modify()", code: 200);
+      final res = Response().modify(body: "Index page got", code: 200);
       log("CURRENT RESPONSE ${res}");
       return res;
     });
@@ -61,14 +60,13 @@ Future<dynamic> main(final context) async {
       // return Response(body: "Sorry, I'm Default modify()", code: 404);
     });
 
-    final Response res =
-        await Pipeline().addMid(sooo()).last(router.call)(context.req);
-    return res;
-    // await Pipeline().addMid(sooo()).last(router.call(null))(context.req);
-    // log("Finoooi ${res.body}");
+    final Response res = await Pipeline()
+        // .addMiddleware(sooo())
+        .handler(router.call)(Request.parse(context.req));
+    return res.runtimeResponse(context.res);
 
     // return res.modify(body: 'Helooo me').resBody(context.res);
-    // return (await router.call(null)).response(context.res);
+    // return (await router.call()).runtimeResponse(context.res);
     // return context.res.text('Handled successfully');
   } catch (e, st) {
     context.error('Error occured  $e --- $st');
