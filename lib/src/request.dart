@@ -26,7 +26,7 @@ class Request {
   factory Request.parse(dynamic req) {
     return Request(
       bodyText: req.bodyRaw as String,
-      bodyJson: req.bodyJson as Map<String, dynamic>,
+      bodyJson: (req.bodyJson as Map<String, dynamic>?) ?? {},
       headers: req.headers as Map<String, dynamic>,
       scheme: req.scheme as dynamic,
       method: req.method as String,
