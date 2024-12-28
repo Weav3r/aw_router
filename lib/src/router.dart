@@ -6,10 +6,8 @@ import 'route/route.dart';
 import 'route/route_entry.dart';
 
 class Router {
-  // final Map<String, List<Middleware>> routes = {};
   final dynamic _context;
   final dynamic log;
-  // final Response _outResponse = Response();
   final List<RouteEntry> _mRoutes = [];
 
   Router._(this._context, this.log);
@@ -21,12 +19,8 @@ class Router {
   ///
   /// In this case prefix may not contain any parameters, nor
   void mount(
-    // String path,
     String prefix,
-    // MRouteHandler handler,
     RequestHandler handler,
-    // List<Middleware>? middlewares,
-    // HandlerCallback handler,
   ) {
     if (!prefix.startsWith('/')) {
       throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
@@ -51,20 +45,15 @@ class Router {
         return handler(request.copyWith(path: '$path/'));
       });
     }
-
-    // routes[prefix] = []
-    // registerRoute(path + prefix, middlewares);
   }
 
   /// Handle all request to [path] using [handler].
   void all(String path, RequestHandler handler,
       {List<Middleware>? middlewares}) {
     _mRoutes.add(RouteEntry(
-            route: Route('ALL', path),
-            middlewares: middlewares ?? [],
-            handler: handler)
-        // RouteEntry('ALL', path, handler),
-        );
+        route: Route('ALL', path),
+        middlewares: middlewares ?? [],
+        handler: handler));
   }
 
   void add(
@@ -87,8 +76,7 @@ class Router {
   /// `Pipeline.handler()`
   Future<Response> call([Request? reqst]) async {
     log('Context path ${_context.req.path}');
-    Request request = Request.parse(_context.req);
-    // Request request = reqst ?? Request.parse(_context.req);
+    Request request = reqst ?? Request.parse(_context.req);
     // dynamic response = context.res;
     String path = request.path;
     String method = request.method;
@@ -104,13 +92,7 @@ class Router {
       _context
           .log('==========[$method| $toMatchPath] Matched params: ${params}');
       if (params != null) {
-        // _outResponse = entry.invoke(request, params);
-
         return (await entry.invoke(request, params));
-        // _executeMiddlewares(request, response, entry, params);
-        // var sss = Response().resBody(response);
-
-        // return Response();
       }
       // print('Matched ${entry.route}');
     }
@@ -118,34 +100,6 @@ class Router {
     log('Not for loop()');
     return Response();
     // return context.res.text('Not found', 404);
-  }
-
-  Future<void> _executeMiddlewares(dynamic request, dynamic response,
-      RouteEntry routeEntry, Map<String, String> params) async {
-    Map<int, Response> responses = {};
-    Future<void> execute(int index) async {
-      if (index >= routeEntry.middlewares.length) {
-        // _outResponse = handler(request, response);
-
-        // var params = routeEntry.match('/${request.path}');
-        // if (params != null) {
-        await routeEntry.invoke(request, params);
-        log('Re-assign response');
-        // _outResponse = response.text('Hello');
-        // }
-
-        return;
-        // log('Runtime type of response: ${_outResponse.runtimeType}');
-      }
-      final middleware = routeEntry.middlewares[index];
-      //   middleware(request, () async {
-      //     // log('returning from index: $index');
-      //     // if (index < routeEntry.middlewares.length - 1) {
-      //     await execute(index + 1);
-      //   });
-    }
-
-    await execute(0);
   }
 
   /// Handle `GET` request to [route] using [handler].
