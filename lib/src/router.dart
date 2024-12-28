@@ -50,7 +50,8 @@ class Router {
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
         }
-        return handler(request.copyWith(path: '$newPath/'));
+        return handler(request.copyWith(path: newPath));
+        // return handler(request.copyWith(path: '$newPath/'));
       });
     }
   }
