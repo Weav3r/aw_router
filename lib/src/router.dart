@@ -30,19 +30,27 @@ class Router {
     final path = prefix.substring(1);
     if (prefix.endsWith('/')) {
       all('$prefix<path|[^]*>', (Request request) {
-        var x = request.path.substring(prefix.length);
-        if (!x.startsWith('/')) {
-          x = '/$x';
+        var newPath = request.path.substring(prefix.length);
+        if (!newPath.startsWith('/')) {
+          newPath = '/$newPath';
         }
-        final nReq = request.copyWith(path: x);
+        final nReq = request.copyWith(path: newPath);
         return handler(nReq);
       });
     } else {
       all(prefix, (Request request) {
-        return handler(request.copyWith(path: path));
+        var newPath = request.path.substring(prefix.length);
+        if (!newPath.startsWith('/')) {
+          newPath = '/$newPath';
+        }
+        return handler(request.copyWith(path: newPath));
       });
       all('$prefix/<path|[^]*>', (Request request) {
-        return handler(request.copyWith(path: '$path/'));
+        var newPath = request.path.substring(prefix.length);
+        if (!newPath.startsWith('/')) {
+          newPath = '/$newPath';
+        }
+        return handler(request.copyWith(path: '$newPath/'));
       });
     }
   }
