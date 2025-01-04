@@ -56,17 +56,17 @@ class RouteEntry {
       }
     }
     final routePattern = RegExp('^$pattern\$');
-    print('''
-Create route entry
-path: $route
-Groups: ${mm!.groupCount}
-M0: ${mm[0]}
-M1: ${mm[1]}
-M2: ${mm[2]}
-M3: ${mm[3]}
-params: $params
-route pattern: $pattern
-''');
+//     print('''
+// Create route entry
+// path: $route
+// Groups: ${mm!.groupCount}
+// M0: ${mm[0]}
+// M1: ${mm[1]}
+// M2: ${mm[2]}
+// M3: ${mm[3]}
+// params: $params
+// route pattern: $pattern
+// ''');
     return RouteEntry._(route, middlewares, handler, params, routePattern);
   }
 
@@ -75,7 +75,7 @@ route pattern: $pattern
   Map<String, String>? match(String path) {
     var match = _routePattern.firstMatch(path);
     if (match == null) {
-      print('Route pattern match is null');
+      // print('Route pattern match is null');
       return null;
     }
 
@@ -84,12 +84,12 @@ route pattern: $pattern
     for (var (i, p) in _params.indexed) {
       params[p] = match[i + 1]!;
     }
-    print('''
-match
-path: $path
-route pattern: $_routePattern
-params: $params
-''');
+//     print('''
+// match
+// path: $path
+// route pattern: $_routePattern
+// params: $params
+// ''');
     return params;
   }
 
@@ -101,10 +101,10 @@ params: $params
     }
     return await p.handler((req) async {
       if (handler is RequestHandler || _params.isEmpty) {
-        print('####### invoking RequestHandler with no params');
+        // print('####### invoking RequestHandler with no params');
         return await handler(req) as Response;
       }
-      print('####### invoking non RequestHandler');
+      // print('####### invoking non RequestHandler');
       return await Function.apply(handler, [
         request,
         ..._params.map((n) => params![n]),

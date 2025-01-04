@@ -21,7 +21,7 @@ class UsersRouter {
 
       dummyData.add(request.bodyJson);
 
-      return Response.ok({'feature': 'users', 'total': 2, 'data': dummyData});
+      return Response.ok({'router': 'users', 'total': 2, 'data': dummyData});
     });
 
     router.get('/<userId|[0-9]+>', (Request req, id) {
@@ -31,7 +31,7 @@ class UsersRouter {
     });
 
     router.all('/<nop|.*>', (req) async {
-      return Response(body: "No response from users");
+      return Response(body: {'router': 'users', 'msg': "Not found"});
       // return Response(body: "Sorry, I'm Default modify()", code: 404);
     });
 

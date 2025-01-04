@@ -53,7 +53,7 @@ Future<dynamic> main(final context) async {
       return res;
     });
 
-    router.mount('/users/', UsersRouter(context).router.call);
+    router.mount('/users', UsersRouter(context).router.call);
 
     router.all('/<chaff|.*>', middlewares: [sooo(), s1(), foo], (req) async {
       return Response(body: "[AWR] Sorry, I'm Default modify(${req.context})");

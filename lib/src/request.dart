@@ -3,6 +3,8 @@
 
 import 'dart:convert';
 
+import 'package:aw_router/src/util.dart';
+
 /// {@template my_request}
 /// A class that represents the request object.
 /// {@endtemplate}
@@ -20,11 +22,10 @@ class Request {
     required this.path,
     required this.queryString,
     required this.query,
-    this.context = const <String, dynamic>{},
-    this.params = const <String, dynamic>{},
+    required this.context,
   });
 
-  static Map<String, dynamic> _tempBodyJson(dynamic request) {
+  static Map<String, dynamic> _getBodyJson(dynamic request) {
     try {
       return request.bodyJson;
     } catch (_) {
@@ -37,7 +38,7 @@ class Request {
   factory Request.parse(dynamic req) {
     return Request(
       bodyText: req.bodyRaw as String,
-      bodyJson: _tempBodyJson(req),
+      bodyJson: _getBodyJson(req),
       headers: req.headers as Map<String, dynamic>,
       scheme: req.scheme as dynamic,
       method: req.method as String,
@@ -47,6 +48,7 @@ class Request {
       path: req.path as String,
       queryString: req.queryString as String,
       query: req.query as Map<String, dynamic>,
+      context: <String, dynamic>{},
     );
   }
 
@@ -83,11 +85,12 @@ class Request {
   /// The query of the request.
   final Map<String, dynamic> query;
 
-  /// The params of the request.
-  final Map<String, dynamic> params;
-
-  /// The params of the request.
+  /// The context of the request. Maninly used to pass variables
+  /// to next() function i.e. middleware/handlers
   final Map<String, dynamic> context;
+
+  Map<String, dynamic> _modifyContext(Map<String, dynamic>? updates) =>
+      updateMap<String, dynamic>(context, updates);
 
   /// Copy with
   Request copyWith({
@@ -102,7 +105,6 @@ class Request {
     String? path,
     String? queryString,
     Map<String, dynamic>? query,
-    Map<String, dynamic>? params,
     Map<String, dynamic>? context,
   }) {
     return Request(
@@ -117,8 +119,7 @@ class Request {
       path: path ?? this.path,
       queryString: queryString ?? this.queryString,
       query: query ?? this.query,
-      params: params ?? this.params,
-      context: context ?? this.context,
+      context: _modifyContext(context), // context ?? this.context,
     );
   }
 
@@ -135,7 +136,6 @@ host: $host,
 port: $port,
 queryString: $queryString,
 query: $query,
-params: $params,
 context: $context)''';
   }
 }
