@@ -105,8 +105,10 @@ class RouteEntry {
         return await handler(req) as Response;
       }
       // print('####### invoking non RequestHandler');
+      // p.handler(
+      // )
       return await Function.apply(handler, [
-        request,
+        req,
         ..._params.map((n) => params![n]),
       ]) as Response;
     })(request);
