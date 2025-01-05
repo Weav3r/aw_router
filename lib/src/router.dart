@@ -101,7 +101,8 @@ class Router {
       _context
           .log('==========[$method| $toMatchPath] Matched params: ${params}');
       if (params != null) {
-        return (await entry.invoke(request, params));
+        final modReq = request.copyWith(routeParams: params);
+        return (await entry.invoke(modReq, params));
       }
       // print('Matched ${entry.route}');
     }

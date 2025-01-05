@@ -1,8 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: avoid_dynamic_calls
 
-import 'dart:convert';
-
 import 'package:aw_router/src/util.dart';
 
 /// {@template my_request}
@@ -23,6 +21,7 @@ class Request {
     required this.queryString,
     required this.query,
     required this.context,
+    this.routeParams = const <String, dynamic>{},
   });
 
   static Map<String, dynamic> _getBodyJson(dynamic request) {
@@ -89,6 +88,10 @@ class Request {
   /// to next() function i.e. middleware/handlers
   final Map<String, dynamic> context;
 
+  /// The map of matched parameters in the route url
+  /// Note this is not the same as query parameters (filter parameters)
+  final Map<String, dynamic> routeParams;
+
   Map<String, dynamic> _modifyContext(Map<String, dynamic>? updates) =>
       updateMap<String, dynamic>(context, updates);
 
@@ -106,6 +109,7 @@ class Request {
     String? queryString,
     Map<String, dynamic>? query,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? routeParams,
   }) {
     return Request(
       bodyText: bodyText ?? this.bodyText,
@@ -120,6 +124,7 @@ class Request {
       queryString: queryString ?? this.queryString,
       query: query ?? this.query,
       context: _modifyContext(context), // context ?? this.context,
+      routeParams: routeParams ?? this.routeParams,
     );
   }
 
@@ -137,6 +142,8 @@ port: $port,
 path: $path,
 queryString: $queryString,
 query: $query,
-context: $context)''';
+context: $context,
+routeParams: $routeParams,
+)''';
   }
 }
