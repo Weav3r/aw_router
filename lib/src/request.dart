@@ -134,6 +134,7 @@ scheme: $scheme,
 url: $url,
 host: $host,
 port: $port,
+path: $path,
 queryString: $queryString,
 query: $query,
 context: $context)''';
