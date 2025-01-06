@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: avoid_dynamic_calls
 
+import 'dart:collection';
+
 import 'package:aw_router/src/util.dart';
 
 /// {@template my_request}
@@ -21,8 +23,8 @@ class Request {
     required this.queryString,
     required this.query,
     required this.context,
-    this.routeParams = const <String, dynamic>{},
-  });
+    Map<String, dynamic> routeParams = const <String, dynamic>{},
+  }) : _routeParams = routeParams;
 
   static Map<String, dynamic> _getBodyJson(dynamic request) {
     try {
@@ -90,7 +92,10 @@ class Request {
 
   /// The map of matched parameters in the route url
   /// Note this is not the same as query parameters (filter parameters)
-  final Map<String, dynamic> routeParams;
+  final Map<String, dynamic> _routeParams;
+
+  UnmodifiableMapView<String, dynamic> get routeParams =>
+      UnmodifiableMapView(_routeParams);
 
   Map<String, dynamic> _modifyContext(Map<String, dynamic>? updates) =>
       updateMap<String, dynamic>(context, updates);
@@ -124,7 +129,7 @@ class Request {
       queryString: queryString ?? this.queryString,
       query: query ?? this.query,
       context: _modifyContext(context), // context ?? this.context,
-      routeParams: routeParams ?? this.routeParams,
+      routeParams: routeParams ?? this._routeParams,
     );
   }
 
@@ -143,7 +148,7 @@ path: $path,
 queryString: $queryString,
 query: $query,
 context: $context,
-routeParams: $routeParams,
+routeParams: $_routeParams,
 )''';
   }
 }
