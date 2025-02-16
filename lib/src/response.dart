@@ -4,31 +4,32 @@ import 'dart:typed_data';
 class Response {
   final int _statusCode;
   final Object? _body;
+  final Map? headers;
 
   // Getter to get the body
   Object? get body => _body;
   int? get statusCode => _statusCode;
 
   // Private constructor to ensure singleton
-  Response._(this._body, this._statusCode);
+  Response._(this._body, this._statusCode, this.headers);
 
-  factory Response({Object? body, int? code}) {
-    return Response._(body, code ?? 404);
+  factory Response({Object? body, int? code, Map? headers}) {
+    return Response._(body, code ?? 404, headers);
   }
-  factory Response.ok(Object? body) {
-    return Response._(body, 200);
+  factory Response.ok(Object? body, {Map? headers}) {
+    return Response._(body, 200, headers);
   }
 
   // Method to modify the body
-  Response modify({required Object? body, int? code}) {
-    return Response._(body ?? _body, code ?? _statusCode);
+  Response modify({required Object? body, int? code, Map? headers}) {
+    return Response._(body ?? _body, code ?? _statusCode, headers);
   }
 
   dynamic runtimeResponse(dynamic response) {
     return switch (body) {
-      String _ => response.text(body, _statusCode),
-      Map _ => response.json(body, _statusCode),
-      Uint8List _ => response.binary(body, _statusCode),
+      String _ => response.text(body, _statusCode, headers),
+      Map _ => response.json(body, _statusCode, headers),
+      Uint8List _ => response.binary(body, _statusCode, headers),
       _ => response.empty(),
     };
   }
