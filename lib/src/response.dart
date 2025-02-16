@@ -4,7 +4,7 @@ import 'dart:typed_data';
 class Response {
   final int _statusCode;
   final Object? _body;
-  final Map? headers;
+  final Map<String, dynamic>? headers;
 
   // Getter to get the body
   Object? get body => _body;
@@ -13,15 +13,16 @@ class Response {
   // Private constructor to ensure singleton
   Response._(this._body, this._statusCode, this.headers);
 
-  factory Response({Object? body, int? code, Map? headers}) {
+  factory Response({Object? body, int? code, Map<String, dynamic>? headers}) {
     return Response._(body, code ?? 404, headers);
   }
-  factory Response.ok(Object? body, {Map? headers}) {
+  factory Response.ok(Object? body, {Map<String, dynamic>? headers}) {
     return Response._(body, 200, headers);
   }
 
   // Method to modify the body
-  Response modify({required Object? body, int? code, Map? headers}) {
+  Response modify(
+      {required Object? body, int? code, Map<String, dynamic>? headers}) {
     return Response._(body ?? _body, code ?? _statusCode, headers);
   }
 
