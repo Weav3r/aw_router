@@ -53,6 +53,18 @@ Future<dynamic> main(final context) async {
       return res;
     });
 
+    router.get('/redirect', (Request req) {
+      // if (res case Response _) {
+      // res.modify(body: "You got users root with modify()");
+      // }
+      log("Request runtime type: $req");
+      req.headers['redirectUrl'] = true;
+      // final res = Response().modify(body: "Index page got", code: 200);
+      final res = Response(body: 'https://exmaple.com', code: 200);
+      // log("CURRENT RESPONSE ${res}");
+      return res;
+    });
+
     router.mount('/users', UsersRouter(context).router.call);
 
     router.all('/<chaff|.*>', middlewares: [sooo(), s1(), foo], (req) async {
