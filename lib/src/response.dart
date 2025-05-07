@@ -32,13 +32,11 @@ class Response {
 
   dynamic runtimeResponse(dynamic response) {
     return switch (body) {
-      String _ => {
-          if (_headers.keys.contains('redirectUrl'))
-            response.redirect(body, 301)
-          else
-            response.text(body, _statusCode, _headers)
-        },
-      // String s when s.startsWith() => response.redirect('', 301),
+      String s
+          when _headers.keys.contains('redirectUrl') &&
+              s.startsWith(RegExp(r'https?://')) =>
+        response.redirect(body, 301),
+      String _ => response.text(body, _statusCode, _headers),
       Map _ => response.json(body, _statusCode, _headers),
       Uint8List _ => response.binary(body, _statusCode, _headers),
       _ => response.empty(),
