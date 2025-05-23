@@ -17,15 +17,20 @@ Future<dynamic> main(final context) async {
       };
     }
 
-    Middleware sooo() {
+    Middleware modifyMiddleware() {
       return (handler) {
         return (request) async {
-          final modReq =
-              request.copyWith(context: {...request.context, 'me': 'Hey'});
-          log('sooo ${modReq.context}');
-          final r = await handler(modReq);
-          return r.modify(body: "soo(${r.body})");
-          // return Response().modify(body: 'Sooo()');
+          //Modify original request
+          final modifiedReq = request.copyWith(context: {
+            ...request.context,
+            'myinternal': 'This is passed around internally'
+          });
+          //Avoid using print. This is here for demonstration purposes
+          print('Modified request: ${modifiedReq.context}');
+
+          final Response r = await handler(modifiedReq);
+          //Modify response from handler
+          return r.modify(body: "Modfied response body(${r.body})");
         };
       };
     }
@@ -60,14 +65,20 @@ Future<dynamic> main(final context) async {
       log("Request runtime type: $req");
       req.headers['redirectUrl'] = true;
       // final res = Response().modify(body: "Index page got", code: 200);
-      final res = Response(body: 'https://exmaple.com', code: 200);
+      final res = Response(
+          body: '', code: 301, headers: {'Location': 'https://exmaple.com'});
+      // final res = Response(
+      //     body: 'https://exmaple.com',
+      //     code: 200,
+      //     headers: {'redirectUrl': true});
       // log("CURRENT RESPONSE ${res}");
       return res;
     });
 
     router.mount('/users', UsersRouter(context).router.call);
 
-    router.all('/<chaff|.*>', middlewares: [sooo(), s1(), foo], (req) async {
+    router.all('/<chaff|.*>', middlewares: [modifyMiddleware(), s1(), foo],
+        (req) async {
       return Response(body: "[AWR] Sorry, I'm Default modify(${req.context})");
       // return Response(body: "Sorry, I'm Default modify()", code: 404);
     });

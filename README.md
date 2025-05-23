@@ -52,6 +52,8 @@ import 'package:aw_router/aw_router.dart' as awr;
 
 ## Usage Example
 
+This is a basic example, see [example](example/) for a more advance set up.
+
 ```dart
 import 'package:aw_router/aw_router.dart' as awr;
 
