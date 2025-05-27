@@ -1,99 +1,77 @@
-import 'package:aw_router/aw_router.dart' as awr;
-import 'package:awr_example/users.dart';
+// example/main.dart
 
+import 'package:aw_router/aw_router.dart' as awr;
+import 'middleware/logging.dart';
+import 'middleware/auth.dart';
+import 'middleware/response_wrapper.dart';
+import 'middleware/normalize_trailing_slash.dart';
+import 'routers/product_router.dart';
+import 'routers/user_router.dart';
+import 'routers/auth_router.dart';
+
+/// The main entry point for the application.
+/// Sets up the root router and mounts all route pipelines with relevant middleware.
 Future<dynamic> main(final context) async {
   try {
-    final log = context.log;
-    final router = awr.Router(context);
+    // Create the root router instance.
+    final rootRouter = awr.Router(context);
 
-    foo(awr.RequestHandler handler) {
-      return (awr.Request request) async {
-        final modReq =
-            request.copyWith(context: {...request.context, 'foo': 'Hi'});
-        log('foo ${modReq.context}');
-        final r = await handler(modReq);
-        return r.modify(body: "foo(${r.body})");
-        // return awr.Response().modify(body: 'Sooo()');
-      };
-    }
+    // Product routes with full middleware pipeline
+    // Middleware includes: strip trailing slashes, logging, auth, and response wrapping
+    final productPipeline = awr.Pipeline()
+        .addMiddleware(stripTrailingSlashMiddleware)
+        .addMiddleware(logMiddleware)
+        .addMiddleware(authMiddleware)
+        .addMiddleware(responseWrapperMiddleware)
+        .handler(ProductRouter(context).router.call);
 
-    awr.Middleware modifyMiddleware() {
-      return (handler) {
-        return (request) async {
-          //Modify original request
-          final modifiedReq = request.copyWith(context: {
-            ...request.context,
-            'myinternal': 'This is passed around internally'
-          });
-          //Avoid using print. This is here for demonstration purposes
-          print('Modified request: ${modifiedReq.context}');
+    // User routes pipeline
+    final userPipeline = awr.Pipeline()
+        .addMiddleware(stripTrailingSlashMiddleware)
+        .addMiddleware(logMiddleware)
+        .addMiddleware(authMiddleware)
+        .addMiddleware(responseWrapperMiddleware)
+        .handler(UserRouter(context).router.call);
 
-          final awr.Response r = await handler(modifiedReq);
-          //Modify response from handler
-          return r.modify(body: "Modfied response body(${r.body})");
-        };
-      };
-    }
+    // Auth routes pipeline (no auth middleware)
+    final authPipeline = awr.Pipeline()
+        .addMiddleware(stripTrailingSlashMiddleware)
+        .addMiddleware(logMiddleware)
+        .addMiddleware(responseWrapperMiddleware)
+        .handler(AuthRouter(context).router.call);
 
-    awr.Middleware s1() {
-      return (handler) {
-        return (request) async {
-          final modReq =
-              request.copyWith(context: {...request.context, 's1': 'Heya'});
-          log('s1 ${modReq.context}');
-          final r = await handler(modReq);
-          return r.modify(body: "s1(${r.body})");
-          // return awr.Response().modify(body: 'Sooo()');
-        };
-      };
-    }
+    // rootRouter.mount(
+    //   '/users',
+    //   stripTrailingSlashMiddleware(
+    //     awr.Pipeline()
+    //         .addMiddleware(logMiddleware)
+    //         .addMiddleware(authMiddleware)
+    //         .addMiddleware(responseWrapperMiddleware)
+    //         .handler(UserRouter(context).router.call),
+    //   ),
+    // );
 
-    router.get('/', (awr.Request req) {
-      // if (res case awr.Response _) {
-      // res.modify(body: "You got users root with modify()");
-      // }
-      log("awr.Request runtime type: $req");
-      final res = awr.Response().modify(body: "Index page got", code: 200);
-      log("CURRENT RESPONSE ${res}");
-      return res;
+    // Mount all pipelines to their respective root paths
+    rootRouter.mount('/products', productPipeline);
+    rootRouter.mount('/users', userPipeline);
+    rootRouter.mount('/auth', authPipeline);
+
+    // Catch-all route for any unmatched request paths
+    rootRouter.all('/<ignore|.*>', (awr.Request req) {
+      return awr.Response(code: 404, body: {'error': 'Not Found'});
     });
 
-    router.get('/redirect', (awr.Request req) {
-      // if (res case awr.Response _) {
-      // res.modify(body: "You got users root with modify()");
-      // }
-      log("awr.Request runtime type: $req");
-      req.headers['redirectUrl'] = true;
-      // final res = awr.Response().modify(body: "Index page got", code: 200);
-      final res = awr.Response(
-          body: '', code: 301, headers: {'Location': 'https://exmaple.com'});
-      // final res = awr.Response(
-      //     body: 'https://exmaple.com',
-      //     code: 200,
-      //     headers: {'redirectUrl': true});
-      // log("CURRENT RESPONSE ${res}");
-      return res;
-    });
+    // Parse the incoming request and include logging context
+    final req =
+        awr.Request.parse(context.req).copyWith(context: {'log': context.log});
 
-    router.mount('/users', UsersRouter(context).router.call);
-
-    router.all('/<chaff|.*>', middlewares: [modifyMiddleware(), s1(), foo],
-        (req) async {
-      return awr.Response(
-          body: "[AWR] Sorry, I'm Default modify(${req.context})");
-      // return awr.Response(body: "Sorry, I'm Default modify()", code: 404);
-    });
-
-    final awr.Response res = await awr.Pipeline()
-        // .addMiddleware(sooo())
-        .handler(router.call)(awr.Request.parse(context.req));
+    // Route the request through the root router and return the runtime response
+    final res = await rootRouter.call(req);
+    context.log('Response: ${res.body}');
     return res.runtimeResponse(context.res);
-
-    // return res.modify(body: 'Helooo me').resBody(context.res);
-    // return (await router.call()).runtimeResponse(context.res);
-    // return context.res.text('Handled successfully');
   } catch (e, st) {
-    context.error('Error occured  $e --- $st');
+    // Global error handler for catching unexpected failures
+    context.error('Server Error: $e\n$st');
     return context.res.empty();
   }
 }

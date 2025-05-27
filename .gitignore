@@ -1,3 +1,6 @@
+# Ignore bruno api test files
+bruno/
+
 # https://dart.dev/guides/libraries/private-files
 # Created by `dart pub`
 .dart_tool/
