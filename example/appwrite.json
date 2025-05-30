@@ -1,21 +1,99 @@
 {
-  "projectId": "660b7f66f282093298a",
-  "projectName": "aw_router",
-  "functions": [
-    {
-      "$id": "6610c229c5e5045f076b",
-      "name": "awr_function",
-      "runtime": "dart-3.3",
-      "execute": ["any"],
-      "events": [],
-      "schedule": "",
-      "timeout": 15,
-      "enabled": true,
-      "logging": true,
-      "entrypoint": "lib/main.dart",
-      "commands": "dart pub get",
-      "ignore": [".packages", ".dart_tool"],
-      "path": "."
-    }
-  ]
+    "projectId": "660b7f66f282093298a",
+    "projectName": "aw_router_example",
+    "functions": [
+        {
+            "$id": "6610c229c5e5045f076b",
+            "name": "awr_function",
+            "runtime": "dart-3.5",
+            "execute": [
+                "any"
+            ],
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "lib/main.dart",
+            "commands": "dart pub get",
+            "ignore": [
+                ".packages",
+                ".dart_tool"
+            ],
+            "path": "."
+        }
+    ],
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": true,
+                "anonymous": true,
+                "email-otp": true,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 0,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": false,
+                "mockNumbers": []
+            }
+        }
+    },
+    "databases": [
+        {
+            "$id": "6835256b000116cb91d2",
+            "name": "mdb",
+            "enabled": true
+        }
+    ],
+    "collections": [
+        {
+            "$id": "683525e100187d3aa6cb",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "databaseId": "6835256b000116cb91d2",
+            "name": "messages",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "content",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 100,
+                    "default": null
+                }
+            ],
+            "indexes": []
+        }
+    ]
 }
