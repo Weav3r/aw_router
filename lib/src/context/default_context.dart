@@ -2,7 +2,7 @@ import '../request.dart';
 import 'route_context.dart';
 
 class DefaultContext implements RouterContext {
-  final Request _mockRequest;
+  Request _mockRequest;
 
   DefaultContext({Request? request})
       : _mockRequest = request ??
@@ -28,4 +28,9 @@ class DefaultContext implements RouterContext {
 
   @override
   void error(message) => print('[aw_router][error] $message');
+
+  @override
+  void overrideRequest(Request req) {
+    _mockRequest = req;
+  }
 }

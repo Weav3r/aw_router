@@ -9,18 +9,26 @@ import 'route/route.dart';
 import 'route/route_entry.dart';
 
 class Router {
-  // final dynamic _context;
-  // final dynamic log;
-  // final List<RouteEntry> _mRoutes = [];
-  // final RouterContext _context;
-
   final RouterContext _context;
+  // void Function(String message) _log;
   final List<RouteEntry> _mRoutes = [];
+
+  void Function(String message) get log => _context.log;
+  void Function(String message) get error => _context.error;
 
   Router._(this._context);
 
   factory Router([dynamic rawContext]) {
     final context = _wrapContext(rawContext);
+    // Inject context.log into request.context
+    // final req = context.req as Request;
+    // final newReq = req.copyWith(context: {
+    //   ...req.context,
+    //   'log': context.log,
+    // });
+    // _log = context.log;
+
+    // context.overrideRequest(newReq);
     return Router._(context);
   }
 

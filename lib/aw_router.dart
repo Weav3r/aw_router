@@ -10,3 +10,5 @@ export 'src/pipeline.dart';
 export 'src/request.dart';
 export 'src/response.dart';
 export 'src/middleware/log_middleware.dart';
+export 'src/logger.dart' show LogLevel;
+export 'src/extensions/request_logger.dart';

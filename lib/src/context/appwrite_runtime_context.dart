@@ -1,3 +1,4 @@
+import '../request.dart';
 import 'route_context.dart';
 
 class AppwriteRouterContext implements RouterContext {
@@ -13,4 +14,11 @@ class AppwriteRouterContext implements RouterContext {
 
   @override
   void error(message) => _ctx.error(message);
+
+  @override
+  void overrideRequest(Request request) {
+    // No-op or throw depending on desired behavior
+    throw UnsupportedError(
+        'Appwrite context does not support overriding the request');
+  }
 }

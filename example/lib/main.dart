@@ -24,7 +24,10 @@ Future<dynamic> main(final context) async {
     // Middleware includes: strip trailing slashes, logging, auth, and response wrapping
     final productPipeline = awr.Pipeline()
         .addMiddleware(stripTrailingSlashMiddleware)
-        .addMiddleware(logMiddleware)
+        .addMiddleware(awr.logMiddleware(
+            level: awr.LogLevel.debug,
+            logFn: rootRouter.log,
+            errorFn: rootRouter.error))
         .addMiddleware(authMiddleware)
         .addMiddleware(responseWrapperMiddleware)
         .handler(ProductRouter().router.call);
@@ -32,7 +35,7 @@ Future<dynamic> main(final context) async {
     // User routes pipeline
     final userPipeline = awr.Pipeline()
         .addMiddleware(stripTrailingSlashMiddleware)
-        .addMiddleware(logMiddleware)
+        .addMiddleware(exampleLogMiddleware)
         .addMiddleware(authMiddleware)
         .addMiddleware(responseWrapperMiddleware)
         .handler(UserRouter(context).router.call);
@@ -40,13 +43,13 @@ Future<dynamic> main(final context) async {
     // Auth routes pipeline (no auth middleware)
     final authPipeline = awr.Pipeline()
         .addMiddleware(stripTrailingSlashMiddleware)
-        .addMiddleware(logMiddleware)
+        .addMiddleware(exampleLogMiddleware)
         .addMiddleware(responseWrapperMiddleware)
         .handler(AuthRouter(context).router.call);
 
     final appwritePipeline = awr.Pipeline()
         .addMiddleware(stripTrailingSlashMiddleware)
-        .addMiddleware(logMiddleware)
+        .addMiddleware(exampleLogMiddleware)
         .addMiddleware(responseWrapperMiddleware)
         .handler(AppwriteRouter(context).router.call);
 
@@ -60,7 +63,8 @@ Future<dynamic> main(final context) async {
     rootRouter.mount('/responses', ResponseTypesRouter(context).router.call);
 
     // Plain text/html response
-    rootRouter.get('/html', middlewares: [logMiddleware], (awr.Request req) {
+    rootRouter.get('/html', middlewares: [exampleLogMiddleware],
+        (awr.Request req) {
       return awr.Response.ok('<h1>This is a heading 1</h1>', headers: {
         'Content-Type': 'text/html',
       });

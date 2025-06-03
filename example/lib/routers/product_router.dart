@@ -26,6 +26,8 @@ class ProductRouter {
 
     // List all products.
     r.get('/', (awr.Request req) async {
+      // req.context['logger'] = 'foo';
+      req.logError('Fetching all products');
       return awr.Response.ok(_products.values.toList());
     });
 
