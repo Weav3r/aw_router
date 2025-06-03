@@ -1,8 +1,8 @@
 import 'package:aw_router/aw_router.dart' as awr;
 
 class ProductRouter {
-  final dynamic context;
-  ProductRouter(this.context);
+  // final dynamic context;
+  ProductRouter();
 
   // Simulate a product store using an in-memory map.
   final Map<String, Map<String, dynamic>> _products = {
@@ -22,7 +22,7 @@ class ProductRouter {
 
   // Define a router that handles product-related endpoints.
   awr.Router get router {
-    final r = awr.Router(context);
+    final r = awr.Router();
 
     // List all products.
     r.get('/', (awr.Request req) async {

@@ -1,3 +1,6 @@
+import 'context/appwrite_runtime_context.dart';
+import 'context/default_context.dart';
+import 'context/route_context.dart';
 import 'middleware.dart';
 import 'request.dart';
 import 'request_handler.dart';
@@ -6,13 +9,26 @@ import 'route/route.dart';
 import 'route/route_entry.dart';
 
 class Router {
-  final dynamic _context;
-  final dynamic log;
+  // final dynamic _context;
+  // final dynamic log;
+  // final List<RouteEntry> _mRoutes = [];
+  // final RouterContext _context;
+
+  final RouterContext _context;
   final List<RouteEntry> _mRoutes = [];
 
-  Router._(this._context, this.log);
-  factory Router(dynamic context) {
-    return Router._(context, context.log);
+  Router._(this._context);
+
+  factory Router([dynamic rawContext]) {
+    final context = _wrapContext(rawContext);
+    return Router._(context);
+  }
+
+  static RouterContext _wrapContext(dynamic ctx) {
+    if (ctx == null) return DefaultContext();
+    if (ctx is RouterContext) return ctx;
+    if (ctx.req != null) return AppwriteRouterContext(ctx);
+    return DefaultContext();
   }
 
   /// Mount a handler below a prefix.
@@ -84,8 +100,15 @@ class Router {
   /// [RequestHandler]. Thus this method can be called in `mount()` and in a
   /// `Pipeline.handler()`
   Future<Response> call([Request? reqst]) async {
-    log('Context path ${_context.req.path}');
-    Request request = reqst ?? Request.parse(_context.req);
+    late Request request;
+
+    _context.log('Context path ${_context.req.path}');
+    if (_context.req is Request) {
+      request = reqst ?? _context.req as Request;
+    } else {
+      request = reqst ?? Request.parse(_context.req);
+    }
+
     // dynamic response = context.res;
     String path = request.path;
     String method = request.method;
@@ -107,7 +130,7 @@ class Router {
       // print('Matched ${entry.route}');
     }
 
-    log('Not for loop()');
+    _context.log('Not for loop()');
     return Response();
     // return context.res.text('Not found', 404);
   }

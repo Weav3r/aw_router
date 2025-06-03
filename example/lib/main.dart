@@ -27,7 +27,7 @@ Future<dynamic> main(final context) async {
         .addMiddleware(logMiddleware)
         .addMiddleware(authMiddleware)
         .addMiddleware(responseWrapperMiddleware)
-        .handler(ProductRouter(context).router.call);
+        .handler(ProductRouter().router.call);
 
     // User routes pipeline
     final userPipeline = awr.Pipeline()
@@ -50,17 +50,13 @@ Future<dynamic> main(final context) async {
         .addMiddleware(responseWrapperMiddleware)
         .handler(AppwriteRouter(context).router.call);
 
-    final responseTypesPipeline = awr.Pipeline()
-        .addMiddleware(stripTrailingSlashMiddleware)
-        .addMiddleware(logMiddleware)
-        .handler(ResponseTypesRouter(context).router.call);
-
     // Mount all pipelines to their respective root paths
     rootRouter.mount('/products', productPipeline);
     rootRouter.mount('/users', userPipeline);
     rootRouter.mount('/auth', authPipeline);
     rootRouter.mount('/appwrite', appwritePipeline);
 
+    // Mount routers without middleware
     rootRouter.mount('/responses', ResponseTypesRouter(context).router.call);
 
     // Plain text/html response

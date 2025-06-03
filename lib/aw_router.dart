@@ -9,5 +9,4 @@ export 'src/middleware.dart';
 export 'src/pipeline.dart';
 export 'src/request.dart';
 export 'src/response.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/middleware/log_middleware.dart';
