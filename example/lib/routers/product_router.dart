@@ -1,8 +1,8 @@
 import 'package:aw_router/aw_router.dart' as awr;
 
 class ProductRouter {
-  // final dynamic context;
-  ProductRouter();
+  final dynamic context;
+  ProductRouter(this.context);
 
   // Simulate a product store using an in-memory map.
   final Map<String, Map<String, dynamic>> _products = {
@@ -22,17 +22,31 @@ class ProductRouter {
 
   // Define a router that handles product-related endpoints.
   awr.Router get router {
-    final r = awr.Router();
+    // final r = awr.Router(context, fallbackLogLevel: awr.LogLevel.none);
+    final r = awr.Router(context);
 
     // List all products.
     r.get('/', (awr.Request req) async {
       // req.context['logger'] = 'foo';
-      req.logError('Fetching all products');
+      req.logDebug('I debug you');
+      req.logInfo('Informing you');
+      // req.logWarning('I WARN you');
+      // req.logError('Fetching all products');
+      r.error('I WARN you');
+      r.error('Fetching all products');
       return awr.Response.ok(_products.values.toList());
     });
 
     // Retrieve a single product by ID (only numeric IDs allowed).
     r.get('/<id|[0-9]+>', (awr.Request req, String id) async {
+      final product = _products[id];
+      if (product == null) {
+        return awr.Response(code: 404, body: {'error': 'Product not found'});
+      }
+      return awr.Response.ok(product);
+    });
+
+    r.head('/<id|[0-9]+>', (awr.Request req, String id) async {
       final product = _products[id];
       if (product == null) {
         return awr.Response(code: 404, body: {'error': 'Product not found'});
@@ -104,9 +118,17 @@ class ProductRouter {
       });
     });
 
-    r.all('/<ignored|.*>', (awr.Request req) {
-      return awr.Response(body: {'error': 'Not Found in /products'});
+    r.get('/shoe', (awr.Request req) {
+      return awr.Response.routeNotFound;
     });
+
+    // r.get('/waakye', (awr.Request req) {
+    //   return awr.Response.ok({'food': 'Waakye!'});
+    // });
+
+    // r.all('/<ignored|.*>', (awr.Request req) {
+    //   return awr.Response(body: {'error': 'Not Found in /products'});
+    // });
 
     return r;
   }

@@ -12,11 +12,11 @@ awr.RequestHandler stripTrailingSlashMiddleware(awr.RequestHandler handler) {
     final path = request.path;
 
     // Optional logging for debugging before normalization
-    request.context['log']?.call('NORMALISE BEFORE: ${request.path}');
+    request.logInfo('NORMALISE BEFORE: ${request.path}');
 
     // Remove trailing slashes except for the root path
     final isTrailing = path != '/' && path.endsWith('/');
-    request.context['log']?.call('NORMALISE IS TRAILING: $isTrailing');
+    request.logInfo('NORMALISE IS TRAILING: $isTrailing');
 
     final normalizedPath = path != '/' && path.endsWith('/')
         ? path.replaceAll(RegExp(r'/+$'), '')
@@ -26,7 +26,7 @@ awr.RequestHandler stripTrailingSlashMiddleware(awr.RequestHandler handler) {
     final updated = request.copyWith(path: normalizedPath);
 
     // Optional logging after normalization
-    updated.context['log']?.call('NORMALISE AFTER: ${updated.path}');
+    updated.logInfo('NORMALISE AFTER: ${updated.path}');
 
     // Proceed to the next handler with the updated request
     return handler(updated);

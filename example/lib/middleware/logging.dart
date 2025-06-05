@@ -10,13 +10,13 @@ import 'package:aw_router/aw_router.dart' as awr;
 awr.RequestHandler exampleLogMiddleware(awr.RequestHandler handler) {
   return (awr.Request request) async {
     // Log the request method and path if a logger is provided in context.
-    request.context['log']?.call('Log: ${request.method} ${request.path}');
+    request.logDebug('Log: ${request.method} ${request.path}');
 
     // Process the request.
     final res = await handler(request);
 
     // Log the response status code.
-    request.context['log']?.call('Status: ${res.statusCode}');
+    request.logDebug('Status: ${res.statusCode}');
 
     return res;
   };

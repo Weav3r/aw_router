@@ -1,9 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// ignore_for_file: avoid_dynamic_calls
-
 import 'dart:collection';
 
-import 'package:aw_router/src/util.dart';
+import 'package:aw_router/src/utils/util.dart';
 
 /// {@template my_request}
 /// A class that represents the request object.
@@ -22,15 +19,15 @@ class Request {
     required this.path,
     required this.queryString,
     required this.query,
-    required this.context,
+    required Map<String, dynamic> context,
     Map<String, dynamic> routeParams = const <String, dynamic>{},
-  }) : _routeParams = routeParams;
+  })  : _routeParams = routeParams,
+        context = UnmodifiableMapView(context);
 
   static Map<String, dynamic> _getBodyJson(dynamic request) {
     try {
       return request.bodyJson;
     } catch (_) {
-      // print('+++++++++++++++Decoding error $e $st');
       return {};
     }
   }
@@ -129,7 +126,7 @@ class Request {
       queryString: queryString ?? this.queryString,
       query: query ?? this.query,
       context: _modifyContext(context), // context ?? this.context,
-      routeParams: routeParams ?? this._routeParams,
+      routeParams: routeParams ?? _routeParams,
     );
   }
 

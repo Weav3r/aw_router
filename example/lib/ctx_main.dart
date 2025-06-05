@@ -1,4 +1,5 @@
 import 'package:aw_router/aw_router.dart';
+import 'package:awr_example/middleware/introspection.dart';
 
 import 'middleware/auth.dart';
 import 'middleware/normalize_trailing_slash.dart';
@@ -6,16 +7,21 @@ import 'middleware/response_wrapper.dart';
 import 'routers/product_router.dart';
 
 void main() async {
-  final router = Router(); // No context needed!
+  // final router = Router(null); // No context needed!
+  final router =
+      Router(null, fallbackLogLevel: LogLevel.debug); // No context needed!
 
 // Construct a test request with all required fields
   final request = Request(
     method: 'get',
     // path: '/users/123',
-    path: '/products',
+    // path: '/products/shoe',
+    path: '/products/',
+    // path: '/rmid/',
+    // path: '/products/1/',
     // path: '/text',
-    headers: {'authorization': 'valid-token'},
-    // headers: {},
+    // headers: {'authorization': 'valid-token'},
+    headers: {},
     bodyText: '',
     bodyJson: {
       "title": "Valid Product",
@@ -34,15 +40,29 @@ void main() async {
 
   try {
     final productPipeline = Pipeline()
-        .addMiddleware(stripTrailingSlashMiddleware)
-        .addMiddleware(logMiddleware(
-            level: LogLevel.debug, logFn: router.log, errorFn: router.error))
-        .addMiddleware(authMiddleware)
-        .addMiddleware(responseWrapperMiddleware)
-        .handler(ProductRouter().router.call);
+        .addMiddleware(wrapWithIntrospection(
+            awrLogMiddleware(level: LogLevel.info), 'awrLog'))
+        .addMiddleware(
+            wrapWithIntrospection(stripTrailingSlashMiddleware, 'strip'))
+        .addMiddleware(wrapWithIntrospection(authMiddleware, 'auth'))
+        .addMiddleware(
+            wrapWithIntrospection(responseWrapperMiddleware, 'responseWrapper'))
+        .handler(ProductRouter(null).router.call);
 
     router.mount('/products', productPipeline);
-    router.get('/text', middlewares: [logMiddleware()], (req) {
+    router.get('/products/shoe', (req) {
+      return Response.ok('I got the shoes');
+    });
+
+    router.get('/rmid', middlewares: [
+      wrapWithIntrospection(stripTrailingSlashMiddleware, 'strip'),
+      wrapWithIntrospection(authMiddleware, 'auth'),
+      wrapWithIntrospection(responseWrapperMiddleware, 'resWrapper'),
+    ], (Request req) {
+      return Response.ok({'msg': 'hello'});
+    });
+
+    router.get('/text', middlewares: [awrLogMiddleware()], (Request req) {
       return Response.ok({'msg': 'hello'});
     });
 

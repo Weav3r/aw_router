@@ -7,17 +7,17 @@ import 'package:dart_appwrite/dart_appwrite.dart';
 
 class AppwriteRouter {
   final dynamic context;
-  late final awr.Request parsedRequest;
+  // late final awr.Request parsedRequest;
 
   AppwriteRouter(this.context) {
-    parsedRequest = awr.Request.parse(context.req);
+    // parsedRequest = awr.Request.parse(context.req);
   }
 
   /// Setup your Appwrite client here
   Client get _client => Client()
       .setEndpoint(Platform.environment['APPWRITE_FUNCTION_API_ENDPOINT'] ?? '')
-      .setProject(Platform.environment['APPWRITE_FUNCTION_PROJECT_ID'] ?? '')
-      .setKey(parsedRequest.headers['x-appwrite-key'] ?? '');
+      .setProject(Platform.environment['APPWRITE_FUNCTION_PROJECT_ID'] ?? '');
+  // .setKey(parsedRequest.headers['x-appwrite-key'] ?? '');
 
   Databases get _db => Databases(_client);
   // final String _databaseId = '[DATABASE_ID]'; // Replace with your database ID

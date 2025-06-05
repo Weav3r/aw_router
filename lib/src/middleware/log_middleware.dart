@@ -1,8 +1,13 @@
-import '../logger.dart';
-import '../middleware.dart';
-import '../request.dart';
+import '../utils/constants.dart';
+import '../logger/default_logger.dart';
+import '../core/middleware.dart';
+import '../core/request.dart';
 
-Middleware logMiddleware({
+/// Injects a [Logger] into the request context and logs request details.
+///
+/// Configures the logger with `level`, optional `logFn`, and `errorFn`.
+/// Logs request method, path, response status, and duration.
+Middleware awrLogMiddleware({
   LogLevel level = LogLevel.debug,
   void Function(String message)? logFn,
   void Function(String message)? errorFn,
@@ -18,7 +23,7 @@ Middleware logMiddleware({
 
       final updatedRequest = request.copyWith(context: {
         ...request.context,
-        'logger': logger,
+        ctxLoggerKey: logger,
       });
 
       final response = await handler(updatedRequest);

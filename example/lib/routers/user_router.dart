@@ -7,7 +7,7 @@ class UserRouter {
   UserRouter(this.context);
 
   awr.Router get router {
-    final r = awr.Router(context);
+    final r = awr.Router(context, fallbackLogLevel: awr.LogLevel.debug);
 
     r.get('/me', (awr.Request req) async {
       return awr.Response.ok({'id': 'user-123', 'name': 'John Doe'});
@@ -34,7 +34,7 @@ class UserRouter {
       });
     });
 
-    r.all('/<ignored|.*>', (awr.Request req) {
+    r.all('/<userR_ignored|.*>', (awr.Request req) {
       return awr.Response(body: {'error': 'Not Found in /users'});
     });
 

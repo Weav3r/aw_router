@@ -28,7 +28,7 @@ class AuthRouter {
       return awr.Response(code: 401, body: {'error': 'Invalid credentials'});
     });
 
-    r.all('/<ignored|.*>', (awr.Request req) {
+    r.all('/<authR_ignored|.*>', (awr.Request req) {
       return awr.Response(body: {'error': 'Not Found in /auth'});
     });
 
