@@ -2,7 +2,7 @@ import '../utils/constants.dart';
 import '../logger/logger.dart';
 import '../core/request.dart';
 
-extension RequestLogExtension on Request {
+extension RequestLogExtension on AwRequest {
   static bool _globalMissingLoggerWarningEmitted = false;
   static const _loggerMissingWarning =
       '[aw_router] ⚠️ Logger is missing in Request.context. '

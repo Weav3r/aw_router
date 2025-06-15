@@ -13,7 +13,7 @@ Middleware awrLogMiddleware({
   void Function(String message)? errorFn,
 }) {
   return (handler) {
-    return (Request request) async {
+    return (AwRequest request) async {
       final stopwatch = Stopwatch()..start();
       final logger = DefaultLogger(
         minimumLevel: level,

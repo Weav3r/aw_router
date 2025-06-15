@@ -3,18 +3,18 @@ import 'route_context.dart';
 
 /// A default implementation of [RouterContext] for testing or simple environments.
 ///
-/// This context provides a basic [Request] object (mocked if not provided)
+/// This context provides a basic [AwRequest] object (mocked if not provided)
 /// and prints log and error messages to the console.
 class DefaultContext implements RouterContext {
-  final Request _mockRequest;
+  final AwRequest _mockRequest;
 
   /// Creates a [DefaultContext] instance.
   ///
   /// If a [request] is provided, it's used as the underlying raw request.
-  /// Otherwise, a default mock [Request] for a `GET /` operation is created.
-  DefaultContext({Request? request})
+  /// Otherwise, a default mock [AwRequest] for a `GET /` operation is created.
+  DefaultContext({AwRequest? request})
       : _mockRequest = request ??
-            Request(
+            AwRequest(
                 method: 'GET',
                 path: '/',
                 bodyText: '',
@@ -28,7 +28,7 @@ class DefaultContext implements RouterContext {
                 query: {},
                 context: {});
 
-  /// Provides the raw [Request] object.
+  /// Provides the raw [AwRequest] object.
   @override
   get req => _mockRequest;
 

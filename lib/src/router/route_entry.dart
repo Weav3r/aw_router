@@ -107,7 +107,8 @@ class RouteEntry {
   /// Invokes the route's handler after applying middlewares.
   ///
   /// Dynamically calls the [handler] with [request] and extracted [paramArgs].
-  FutureOr<Response> invoke(Request request, Map<String, String>? paramArgs) {
+  FutureOr<AwResponse> invoke(
+      AwRequest request, Map<String, String>? paramArgs) {
     final RequestHandler finalRouteHandler;
 
     // If the handler is a RequestHandler (takes only Request) OR if there are no path parameters,
@@ -117,10 +118,10 @@ class RouteEntry {
     } else {
       // Otherwise, assume the handler expects path parameters and use Function.apply
       // to pass Request and extracted parameter values.
-      finalRouteHandler = (Request req) async {
+      finalRouteHandler = (AwRequest req) async {
         final args = [req, ..._params.map((n) => paramArgs![n])];
         final dynamic result = Function.apply(handler, args);
-        return await result as Response;
+        return await result as AwResponse;
       };
     }
     final composedHandler = _pipeline.handler(finalRouteHandler);

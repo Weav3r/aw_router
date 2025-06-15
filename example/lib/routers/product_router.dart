@@ -2,7 +2,7 @@ import 'package:aw_router/aw_router.dart' as awr;
 
 class ProductRouter {
   final dynamic context;
-  ProductRouter(this.context);
+  ProductRouter([this.context]);
 
   // Simulate a product store using an in-memory map.
   final Map<String, Map<String, dynamic>> _products = {
@@ -26,7 +26,7 @@ class ProductRouter {
     final r = awr.Router(context);
 
     // List all products.
-    r.get('/', (awr.Request req) async {
+    r.get('/', (awr.AwRequest req) async {
       // req.context['logger'] = 'foo';
       req.logDebug('I debug you');
       req.logInfo('Informing you');
@@ -34,28 +34,28 @@ class ProductRouter {
       // req.logError('Fetching all products');
       r.error('I WARN you');
       r.error('Fetching all products');
-      return awr.Response.ok(_products.values.toList());
+      return awr.AwResponse.ok(_products.values.toList());
     });
 
     // Retrieve a single product by ID (only numeric IDs allowed).
-    r.get('/<id|[0-9]+>', (awr.Request req, String id) async {
+    r.get('/<id|[0-9]+>', (awr.AwRequest req, String id) async {
       final product = _products[id];
       if (product == null) {
-        return awr.Response(code: 404, body: {'error': 'Product not found'});
+        return awr.AwResponse(code: 404, body: {'error': 'Product not found'});
       }
-      return awr.Response.ok(product);
+      return awr.AwResponse.ok(product);
     });
 
-    r.head('/<id|[0-9]+>', (awr.Request req, String id) async {
+    r.head('/<id|[0-9]+>', (awr.AwRequest req, String id) async {
       final product = _products[id];
       if (product == null) {
-        return awr.Response(code: 404, body: {'error': 'Product not found'});
+        return awr.AwResponse(code: 404, body: {'error': 'Product not found'});
       }
-      return awr.Response.ok(product);
+      return awr.AwResponse.ok(product);
     });
 
     // Create a new product.
-    r.post('/', (awr.Request req) async {
+    r.post('/', (awr.AwRequest req) async {
       final product = req.bodyJson;
 
       // Perform basic validation.
@@ -69,7 +69,7 @@ class ProductRouter {
       }
 
       if (errors.isNotEmpty) {
-        return awr.Response(
+        return awr.AwResponse(
             code: 400, body: {'error': 'Validation failed', 'details': errors});
       }
 
@@ -78,19 +78,19 @@ class ProductRouter {
       final newProduct = {...product, 'id': newId};
       _products[newId] = newProduct;
 
-      return awr.Response(
+      return awr.AwResponse(
         code: 201,
         body: {'message': 'Product created', 'product': newProduct},
       );
     });
 
     // Update fields of an existing product.
-    r.patch('/<id|[0-9]+>', (awr.Request req, String id) async {
+    r.patch('/<id|[0-9]+>', (awr.AwRequest req, String id) async {
       final updates = req.bodyJson;
       final product = _products[id];
 
       if (product == null) {
-        return awr.Response(code: 404, body: {'error': 'Product not found'});
+        return awr.AwResponse(code: 404, body: {'error': 'Product not found'});
       }
 
       // Validate fields if present in the update.
@@ -105,21 +105,21 @@ class ProductRouter {
       }
 
       if (errors.isNotEmpty) {
-        return awr.Response(
+        return awr.AwResponse(
             code: 400, body: {'error': 'Validation failed', 'details': errors});
       }
 
       // Apply updates to the product.
       _products[id] = {...product, ...updates, 'id': id};
 
-      return awr.Response.ok({
+      return awr.AwResponse.ok({
         'message': 'Product updated',
         'product': _products[id],
       });
     });
 
-    r.get('/shoe', (awr.Request req) {
-      return awr.Response.routeNotFound;
+    r.get('/shoe', (awr.AwRequest req) {
+      return awr.AwResponse.routeNotFound;
     });
 
     // r.get('/waakye', (awr.Request req) {

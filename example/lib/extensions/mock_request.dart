@@ -1,7 +1,7 @@
-import 'package:aw_router/aw_router.dart' show Request;
+import 'package:aw_router/aw_router.dart' show AwRequest;
 
-/// Helper to create a mock [Request] for testing with sensible defaults.
-Request mockRequest({
+/// Helper to create a mock [AwRequest] for testing with sensible defaults.
+AwRequest mockRequest({
   String path = '/',
   String method = 'get',
   Map<String, String>? headers,
@@ -17,7 +17,7 @@ Request mockRequest({
 }) {
   url ??=
       '$scheme://$host$path${(queryString != null && queryString.isNotEmpty) ? '?$queryString' : ''}';
-  return Request(
+  return AwRequest(
     method: method,
     path: path,
     headers: headers ?? {},

@@ -11,29 +11,29 @@ class ResponseTypesRouter {
     final r = awr.Router(context);
 
     // Plain text response
-    r.get('/text', (awr.Request req) {
-      return awr.Response.ok('This is a plain text response.', headers: {
+    r.get('/text', (awr.AwRequest req) {
+      return awr.AwResponse.ok('This is a plain text response.', headers: {
         'Content-Type': 'text/plain',
       });
     });
 
     // Return a JSON object explicitly
-    r.get('/json', (awr.Request req) {
-      return awr.Response.ok({'message': 'This is JSON!'});
+    r.get('/json', (awr.AwRequest req) {
+      return awr.AwResponse.ok({'message': 'This is JSON!'});
     });
 
     // Binary response (Uint8List)
-    r.get('/binary', (awr.Request req) {
+    r.get('/binary', (awr.AwRequest req) {
       final bytes =
           Uint8List.fromList([0x48, 0x65, 0x6C, 0x6C, 0x6F]); // "Hello"
-      return awr.Response.ok(bytes, headers: {
+      return awr.AwResponse.ok(bytes, headers: {
         'Content-Type': 'application/octet-stream',
       });
     });
 
     // Redirect response, url must always start with http[s]://
-    r.get('/redirect', (awr.Request req) {
-      return awr.Response.redirect('https://example.com');
+    r.get('/redirect', (awr.AwRequest req) {
+      return awr.AwResponse.redirect('https://example.com');
     });
 
     return r;

@@ -9,8 +9,8 @@ class UserRouter {
   awr.Router get router {
     final r = awr.Router(context, fallbackLogLevel: awr.LogLevel.debug);
 
-    r.get('/me', (awr.Request req) async {
-      return awr.Response.ok({'id': 'user-123', 'name': 'John Doe'});
+    r.get('/me', (awr.AwRequest req) async {
+      return awr.AwResponse.ok({'id': 'user-123', 'name': 'John Doe'});
     });
 
 // Example requests:
@@ -18,7 +18,7 @@ class UserRouter {
 // - {{host}}/users/hi+hey/role/mod-erator?permission=full&role=admin ❌ invalid (hyphen in 'mod-erator' not matched by [\w]+)
 
     r.get('/<random>/role/<userRole|[\\w]+>',
-        (awr.Request req, String random, String userRole) async {
+        (awr.AwRequest req, String random, String userRole) async {
       // Handles GET requests to /<random>/role/<userRole>
       // where <userRole> must match the regular expression [\w]+ (alphanumeric and underscores only).
       //
@@ -27,15 +27,15 @@ class UserRouter {
       // - a message string composed from the dynamic path parameters
       // - all query parameters included in the request
 
-      return awr.Response.ok({
+      return awr.AwResponse.ok({
         'id': 'user-123',
         'path-param': 'Random is $random and role is $userRole',
         'query-params': req.query
       });
     });
 
-    r.all('/<userR_ignored|.*>', (awr.Request req) {
-      return awr.Response(body: {'error': 'Not Found in /users'});
+    r.all('/<userR_ignored|.*>', (awr.AwRequest req) {
+      return awr.AwResponse(body: {'error': 'Not Found in /users'});
     });
 
     return r;

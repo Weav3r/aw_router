@@ -5,8 +5,8 @@ import '../core/request_handler.dart';
 
 /// Middleware to remove body from request.
 RequestHandler coreRemoveBodyMiddleware(RequestHandler handler) {
-  return (Request r) async {
-    Response res = await handler(r);
+  return (AwRequest r) async {
+    AwResponse res = await handler(r);
     if (res.headers.containsKey('content-length')) {
       res = res.modify(headers: {'content-length': '0'});
     }

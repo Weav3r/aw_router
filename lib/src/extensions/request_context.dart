@@ -1,14 +1,13 @@
 import '../core/request.dart';
 
-extension RequestContextUpdater on Request {
+extension RequestContextUpdater on AwRequest {
   /// Returns a new Request with an updated context.
-  Request withContext(String key, dynamic value) {
+  AwRequest withContext(String key, dynamic value) {
     return copyWith(context: {...context, key: value});
   }
 
   /// Returns a new Request with a key removed from context.
-  Request removeContext(String key) {
-    final newContext = Map<String, dynamic>.from(context)..remove(key);
-    return copyWith(context: newContext);
+  AwRequest removeContext(String key) {
+    return copyWith(context: {key: null});
   }
 }

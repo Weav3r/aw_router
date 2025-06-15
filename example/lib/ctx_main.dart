@@ -1,5 +1,4 @@
 import 'package:aw_router/aw_router.dart';
-import 'package:awr_example/middleware/introspection.dart';
 
 import 'middleware/auth.dart';
 import 'middleware/normalize_trailing_slash.dart';
@@ -12,7 +11,7 @@ void main() async {
       Router(null, fallbackLogLevel: LogLevel.debug); // No context needed!
 
 // Construct a test request with all required fields
-  final request = Request(
+  final request = AwRequest(
     method: 'get',
     // path: '/users/123',
     // path: '/products/shoe',
@@ -40,30 +39,30 @@ void main() async {
 
   try {
     final productPipeline = Pipeline()
-        .addMiddleware(wrapWithIntrospection(
+        .addMiddleware(awrWrapWithIntrospection(
             awrLogMiddleware(level: LogLevel.info), 'awrLog'))
         .addMiddleware(
-            wrapWithIntrospection(stripTrailingSlashMiddleware, 'strip'))
-        .addMiddleware(wrapWithIntrospection(authMiddleware, 'auth'))
+            awrWrapWithIntrospection(stripTrailingSlashMiddleware, 'strip'))
+        .addMiddleware(awrWrapWithIntrospection(authMiddleware, 'auth'))
         .addMiddleware(
-            wrapWithIntrospection(responseWrapperMiddleware, 'responseWrapper'))
+            awrWrapWithIntrospection(responseWrapperMiddleware, 'responseWrapper'))
         .handler(ProductRouter(null).router.call);
 
     router.mount('/products', productPipeline);
     router.get('/products/shoe', (req) {
-      return Response.ok('I got the shoes');
+      return AwResponse.ok('I got the shoes');
     });
 
     router.get('/rmid', middlewares: [
-      wrapWithIntrospection(stripTrailingSlashMiddleware, 'strip'),
-      wrapWithIntrospection(authMiddleware, 'auth'),
-      wrapWithIntrospection(responseWrapperMiddleware, 'resWrapper'),
-    ], (Request req) {
-      return Response.ok({'msg': 'hello'});
+      awrWrapWithIntrospection(stripTrailingSlashMiddleware, 'strip'),
+      awrWrapWithIntrospection(authMiddleware, 'auth'),
+      awrWrapWithIntrospection(responseWrapperMiddleware, 'resWrapper'),
+    ], (AwRequest req) {
+      return AwResponse.ok({'msg': 'hello'});
     });
 
-    router.get('/text', middlewares: [awrLogMiddleware()], (Request req) {
-      return Response.ok({'msg': 'hello'});
+    router.get('/text', middlewares: [awrLogMiddleware()], (AwRequest req) {
+      return AwResponse.ok({'msg': 'hello'});
     });
 
     final response = await router.call(request);

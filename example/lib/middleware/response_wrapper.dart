@@ -9,7 +9,7 @@ import 'package:aw_router/aw_router.dart' as awr;
 /// a response body like `{'id': 1}` will be transformed to:
 /// `{'data': {'id': 1}}`
 awr.RequestHandler responseWrapperMiddleware(awr.RequestHandler handler) {
-  return (awr.Request request) async {
+  return (awr.AwRequest request) async {
     final res = await handler(request);
 
     // If the status code is not 2xx, return the response unchanged

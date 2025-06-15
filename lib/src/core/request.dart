@@ -5,9 +5,9 @@ import 'package:aw_router/src/utils/util.dart';
 /// {@template my_request}
 /// A class that represents the request object.
 /// {@endtemplate}
-class Request {
+class AwRequest {
   /// {@macro my_request}
-  Request({
+  AwRequest({
     required this.bodyText,
     required this.bodyJson,
     required this.headers,
@@ -33,8 +33,8 @@ class Request {
   }
 
   /// Parsing the Request from Appwrite,
-  factory Request.parse(dynamic req) {
-    return Request(
+  factory AwRequest.parse(dynamic req) {
+    return AwRequest(
       bodyText: req.bodyRaw as String,
       bodyJson: _getBodyJson(req),
       headers: req.headers as Map<String, dynamic>,
@@ -98,7 +98,7 @@ class Request {
       updateMap<String, dynamic>(context, updates);
 
   /// Copy with
-  Request copyWith({
+  AwRequest copyWith({
     String? bodyText,
     Map<String, dynamic>? bodyJson,
     Map<String, dynamic>? headers,
@@ -113,7 +113,7 @@ class Request {
     Map<String, dynamic>? context,
     Map<String, dynamic>? routeParams,
   }) {
-    return Request(
+    return AwRequest(
       bodyText: bodyText ?? this.bodyText,
       bodyJson: bodyJson ?? this.bodyJson,
       headers: headers ?? this.headers,

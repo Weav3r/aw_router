@@ -20,11 +20,11 @@ import '../utils/util.dart' show normalizePath;
 
 /// A typedef for a function that handles exceptions occurring during request processing.
 ///
-/// This handler receives the [Request] that caused the exception, the [error] object,
-/// and the [stack] trace where the error occurred. It should return a [Response]
+/// This handler receives the [AwRequest] that caused the exception, the [error] object,
+/// and the [stack] trace where the error occurred. It should return a [AwResponse]
 /// to be sent back to the client.
-typedef ErrorHandler = FutureOr<Response> Function(
-    Request req, Object error, StackTrace stack);
+typedef ErrorHandler = FutureOr<AwResponse> Function(
+    AwRequest req, Object error, StackTrace stack);
 
 /// A composable [Router] for declarative route definitions, grouping routes
 /// with shared prefixes and middleware composition, mounting sub-handlers, and handling
@@ -117,7 +117,8 @@ class Router {
 
   /// The handler for requests that do not match any defined route.
   /// Defaults to a sentinel that returns a 404 Not Found response.
-  RequestHandler _notFoundHandler = (Request request) => Response.routeNotFound;
+  RequestHandler _notFoundHandler =
+      (AwRequest request) => AwResponse.routeNotFound;
 
   /// An optional handler for exceptions thrown during request processing.
   /// If not set, a default internal server error response is returned.
@@ -200,7 +201,7 @@ class Router {
     }
     // Wildcard mount for trailing slash (e.g., /products/ will match /products/123)
     if (normPrefix.endsWith('/')) {
-      all('$normPrefix<path|[^]*>', (Request request) {
+      all('$normPrefix<path|[^]*>', (AwRequest request) {
         var newPath = request.path.substring(normPrefix.length);
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
@@ -210,7 +211,7 @@ class Router {
       });
     } else {
       // Exact match (e.g., /products will match /products)
-      all(normPrefix, (Request request) {
+      all(normPrefix, (AwRequest request) {
         var newPath = request.path.substring(normPrefix.length);
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
@@ -218,7 +219,7 @@ class Router {
         return handler(request.copyWith(path: newPath));
       });
       // Prefix match with trailing path (e.g., /products will also match /products/123)
-      all('$normPrefix/<path|[^]*>', (Request request) {
+      all('$normPrefix/<path|[^]*>', (AwRequest request) {
         var newPath = request.path.substring(normPrefix.length);
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
@@ -228,7 +229,7 @@ class Router {
     }
   }
 
-  /// Handle all request to [path] using [handler]. Optional [middlewares]
+  /// Handle all request to [path] using [handler]. Optional [middlewares]>
   /// can be applied to this specific route.
   void all(String path, RequestHandler handler,
       {List<Middleware>? middlewares}) {
@@ -277,13 +278,13 @@ class Router {
   /// Unmatched requests go to [Router.onNotFound]; unhandled errors to [Router.onError].
   ///
   /// The optional [request] parameter uses an external request, otherwise the internal context's request.
-  Future<Response> call([Request? request]) async {
-    late Request req;
+  Future<AwResponse> call([AwRequest? request]) async {
+    late AwRequest req;
     // Determine the request object to use (from context or provided argument)
-    if (_context.req is Request) {
-      req = request ?? _context.req as Request;
+    if (_context.req is AwRequest) {
+      req = request ?? _context.req as AwRequest;
     } else {
-      req = request ?? Request.parse(_context.req);
+      req = request ?? AwRequest.parse(_context.req);
     }
     // req.logDebug('Context path b4 injection ${_context.req.path}');
 
@@ -309,12 +310,7 @@ class Router {
         if (entry.route.method != method.toUpperCase() &&
             entry.route.method != 'ALL') {
           continue;
-        } else if (method.toUpperCase() == 'HEAD' &&
-            entry.route.method == 'GET') {
-          // If a HEAD request, and a GET handler exists, use it.
-          // The handler's response body will likely be ignored by the server framework.
-          // The coreRemoveBodyMiddleware handles this for GET routes internally.
-        }
+        } 
 
         var params = entry.match(path);
         if (params != null) {
@@ -323,7 +319,7 @@ class Router {
           final updatedRequest = req.copyWith(routeParams: params);
           final response = await entry.invoke(updatedRequest, params);
 
-          if (response != Response.routeNotFound) {
+          if (response != AwResponse.routeNotFound) {
             return response;
           }
         }
@@ -336,7 +332,7 @@ class Router {
       if (_exceptionHandler != null) {
         return await _exceptionHandler!(req, e, st);
       }
-      return Response.internalServerError();
+      return AwResponse.internalServerError();
     }
   }
 
@@ -380,19 +376,6 @@ class Router {
   void delete(String path, Function handler, {List<Middleware>? middlewares}) =>
       _add('DELETE', path, middlewares, handler);
 
-  /// Handle `CONNECT` requests to [path] using [handler] with optional [middlewares].
-  // void connect(String path, Function handler,
-  //         {List<Middleware>? middlewares}) =>
-  //     _add('CONNECT', path, middlewares, handler);
-
-  /// Handle `OPTIONS` requests to [path] using [handler] with optional [middlewares].
-  // void options(String path, Function handler,
-  //         {List<Middleware>? middlewares}) =>
-  //     _add('OPTIONS', path, middlewares, handler);
-
-  /// Handle `TRACE` requests to [path] using [handler] with optional [middlewares].
-  // void trace(String path, Function handler, {List<Middleware>? middlewares}) =>
-  //     _add('TRACE', path, middlewares, handler);
 
   /// Handle `PATCH` requests to [path] using [handler] with optional [middlewares].
   void patch(String path, Function handler, {List<Middleware>? middlewares}) =>

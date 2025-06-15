@@ -8,7 +8,7 @@ import 'package:aw_router/aw_router.dart' as awr;
 /// - Logs the path before and after normalization (if a logger is available in the context).
 /// - Only removes trailing slashes if the path is not the root `/`.
 awr.RequestHandler stripTrailingSlashMiddleware(awr.RequestHandler handler) {
-  return (awr.Request request) async {
+  return (awr.AwRequest request) async {
     final path = request.path;
 
     // Optional logging for debugging before normalization

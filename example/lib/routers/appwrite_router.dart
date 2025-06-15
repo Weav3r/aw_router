@@ -30,7 +30,7 @@ class AppwriteRouter {
     final r = awr.Router(context);
 
     // Create a message
-    r.post('/messages', (awr.Request req) async {
+    r.post('/messages', (awr.AwRequest req) async {
       final body = req.bodyJson;
       final content = body['content'];
 
@@ -42,30 +42,30 @@ class AppwriteRouter {
           'content': content,
         },
       );
-      return awr.Response.ok(result.toMap());
+      return awr.AwResponse.ok(result.toMap());
     });
 
     // Read all messages
-    r.get('/messages', (awr.Request req) async {
+    r.get('/messages', (awr.AwRequest req) async {
       final result = await _db.listDocuments(
         databaseId: _databaseId,
         collectionId: _collectionId,
       );
-      return awr.Response.ok(result.toMap());
+      return awr.AwResponse.ok(result.toMap());
     });
 
     // Get a specific message by ID
-    r.get('/messagesy/<id|[a-z0-9]+>', (awr.Request req, String id) async {
+    r.get('/messagesy/<id|[a-z0-9]+>', (awr.AwRequest req, String id) async {
       final result = await _db.getDocument(
         databaseId: _databaseId,
         collectionId: _collectionId,
         documentId: id,
       );
-      return awr.Response.ok(result.toMap());
+      return awr.AwResponse.ok(result.toMap());
     });
 
     // Update a message
-    r.put('/messages/<id>', (awr.Request req, String id) async {
+    r.put('/messages/<id>', (awr.AwRequest req, String id) async {
       final body = req.bodyJson;
       final content = body['content'];
 
@@ -75,17 +75,17 @@ class AppwriteRouter {
         documentId: id,
         data: {'content': content},
       );
-      return awr.Response.ok(result.toMap());
+      return awr.AwResponse.ok(result.toMap());
     });
 
     // Delete a message
-    r.delete('/messages/<id>', (awr.Request req, String id) async {
+    r.delete('/messages/<id>', (awr.AwRequest req, String id) async {
       final result = await _db.deleteDocument(
         databaseId: _databaseId,
         collectionId: _collectionId,
         documentId: id,
       );
-      return awr.Response.ok({"res": "$result", 'deleted': true});
+      return awr.AwResponse.ok({"res": "$result", 'deleted': true});
     });
 
     return r;

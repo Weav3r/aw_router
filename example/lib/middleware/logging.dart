@@ -8,7 +8,7 @@ import 'package:aw_router/aw_router.dart' as awr;
 /// When a request is received, it logs the HTTP method and path.
 /// After the request is processed, it logs the response status code.
 awr.RequestHandler exampleLogMiddleware(awr.RequestHandler handler) {
-  return (awr.Request request) async {
+  return (awr.AwRequest request) async {
     // Log the request method and path if a logger is provided in context.
     request.logDebug('Log: ${request.method} ${request.path}');
 

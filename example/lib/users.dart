@@ -13,25 +13,25 @@ class UsersRouter {
 
     router.get(
         '/',
-        (Request request) =>
-            Response.ok({'feature': 'users', 'total': 2, 'data': dummyData}));
+        (AwRequest request) =>
+            AwResponse.ok({'feature': 'users', 'total': 2, 'data': dummyData}));
 
-    router.post('/', (Request request) {
+    router.post('/', (AwRequest request) {
       if (request.bodyJson.isEmpty) throw Exception('Body is null');
 
       dummyData.add(request.bodyJson);
 
-      return Response.ok({'router': 'users', 'total': 2, 'data': dummyData});
+      return AwResponse.ok({'router': 'users', 'total': 2, 'data': dummyData});
     });
 
-    router.get('/<userId|[0-9]+>', (Request req, id) {
+    router.get('/<userId|[0-9]+>', (AwRequest req, id) {
       // log("I'm in the user with id");
-      return Response.ok(
+      return AwResponse.ok(
           {'id': id, 'name': 'Jay Doe', 'verified': true, 'age': 23});
     });
 
     router.all('/<nop|.*>', (req) async {
-      return Response(body: {'router': 'users', 'msg': "Not found"});
+      return AwResponse(body: {'router': 'users', 'msg': "Not found"});
       // return Response(body: "Sorry, I'm Default modify()", code: 404);
     });
 

@@ -6,7 +6,7 @@ import 'dart:typed_data';
 /// This class encapsulates the status code, body, headers, and an optional
 /// redirect location for a response. It's designed to be passed around
 /// internally within your router and middleware pipeline.
-class Response {
+class AwResponse {
   final int _statusCode;
   final Object? _body;
   final Map<String, dynamic> _headers;
@@ -18,39 +18,39 @@ class Response {
   /// from a result where no route was found at all.
   static final routeNotFound = _NoRouteMatchResponse();
 
-  /// Private constructor for [Response]. Use factory constructors for creation.
-  Response._(this._body, this._statusCode,
+  /// Private constructor for [AwResponse]. Use factory constructors for creation.
+  AwResponse._(this._body, this._statusCode,
       Map<String, dynamic>? responseHeaders, this._redirectLocation)
       : _headers = responseHeaders ?? {};
 
-  /// Creates a generic [Response] instance.
+  /// Creates a generic [AwResponse] instance.
   ///
   /// Defaults to a 404 Not Found status code if [code] is not provided.
-  factory Response({Object? body, int? code, Map<String, dynamic>? headers}) {
-    return Response._(body, code ?? 404, headers, null);
+  factory AwResponse({Object? body, int? code, Map<String, dynamic>? headers}) {
+    return AwResponse._(body, code ?? 404, headers, null);
   }
 
-  /// Creates a 200 OK [Response].
-  factory Response.ok(Object? body, {Map<String, dynamic>? headers}) =>
-      Response._(body, 200, headers, null);
+  /// Creates a 200 OK [AwResponse].
+  factory AwResponse.ok(Object? body, {Map<String, dynamic>? headers}) =>
+      AwResponse._(body, 200, headers, null);
 
-  /// Creates a 404 Not Found [Response] with an optional `message`.
-  factory Response.notFound(
+  /// Creates a 404 Not Found [AwResponse] with an optional `message`.
+  factory AwResponse.notFound(
           {String message = 'Not Found', Map<String, dynamic>? headers}) =>
-      Response._(message, 404, headers, null);
+      AwResponse._(message, 404, headers, null);
 
-  /// Creates a 500 Internal Server Error [Response] with an optional `message`.
-  factory Response.internalServerError(
+  /// Creates a 500 Internal Server Error [AwResponse] with an optional `message`.
+  factory AwResponse.internalServerError(
           {String message = 'Internal Server Error',
           Map<String, dynamic>? headers}) =>
-      Response._(message, 500, headers, null);
+      AwResponse._(message, 500, headers, null);
 
-  /// Creates a redirect [Response] (e.g., 302) to `url`.
-  factory Response.redirect(String url,
+  /// Creates a redirect [AwResponse] (e.g., 302) to `url`.
+  factory AwResponse.redirect(String url,
           {int code = 302, Map<String, dynamic>? headers}) =>
-      Response._('Redirecting to $url', code, headers, url);
+      AwResponse._('Redirecting to $url', code, headers, url);
 
-  /// Creates a new [Response] instance by modifying existing properties.
+  /// Creates a new [AwResponse] instance by modifying existing properties.
   ///
   /// This method allows you to change the [body], [code], [headers],
   /// and [redirectLocation] of the current response. It intelligently handles
@@ -60,7 +60,7 @@ class Response {
   ///   location is cleared.
   /// - If the new status code is 3xx and the new body is a URL string,
   ///   the `redirectLocation` is inferred if not explicitly set.
-  Response modify({
+  AwResponse modify({
     Object? body,
     int? code,
     Map<String, dynamic>? headers,
@@ -93,11 +93,11 @@ class Response {
       }
     }
 
-    return Response._(
+    return AwResponse._(
         newBody, newCode, headers ?? _headers, updatedRedirectLocation);
   }
 
-  /// Converts this `aw_router` [Response] into a framework-specific response format.
+  /// Converts this `aw_router` [AwResponse] into a framework-specific response format.
   ///
   /// This method is crucial for adapting the internal `Response` object
   /// to the format expected by the underlying Appwrite (or other) function
@@ -133,19 +133,19 @@ class Response {
       'Response(statusCode: $_statusCode, body: $_body, redirectLocation: $_redirectLocation)';
 }
 
-/// A special internal [Response] subclass used as a sentinel for "no route matched".
+/// A special internal [AwResponse] subclass used as a sentinel for "no route matched".
 ///
 /// This class is not intended for direct instantiation or modification outside
 /// of its specific use case within the router. Its `modify` method is overridden
 /// to preserve its sentinel property if no actual changes are requested.
-class _NoRouteMatchResponse extends Response {
+class _NoRouteMatchResponse extends AwResponse {
   /// Creates a [_NoRouteMatchResponse] instance.
   ///
   /// Uses a distinct status code (999) to signify its special nature.
   _NoRouteMatchResponse() : super._(null, 999, {}, null);
 
   @override
-  Response modify({
+  AwResponse modify({
     Map<String, Object?>? headers,
     Object? body,
     int? code,
