@@ -105,7 +105,7 @@ class AwResponse {
   /// and redirect responses.
   dynamic runtimeResponse(dynamic response) {
     if (_redirectLocation != null && _statusCode >= 300 && _statusCode < 400) {
-      return response.redirect(_redirectLocation!, _statusCode);
+      return response.redirect(_redirectLocation, _statusCode);
     }
 
     return switch (_body) {

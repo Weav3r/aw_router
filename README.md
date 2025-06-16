@@ -51,8 +51,7 @@ dependencies:
   aw_router:
     git:
       url: "https://github.com/Weav3r/aw_router.git"
-      ref: dev
-      version: "0.0.18" # or later
+      version: "0.0.24" # or later
 ```
 
 ## Usage Example
@@ -343,9 +342,7 @@ RequestHandler logMiddleware(RequestHandler handler) {
 This pattern defines a middleware as a function that _returns_ a `Middleware` (`RequestHandler Function(RequestHandler)`). This is the more flexible and canonical approach, as it allows your middleware to encapsulate configuration (e.g., `awrLogMiddleware` takes `level`, `logFn`, `errorFn`).
 
 ```dart
-import 'package:aw_router/middleware.dart'; // For Middleware type
-import 'package:aw_router/aw_request.dart';
-import 'package:aw_router/aw_response.dart';
+import 'package:aw_router/aw_router.dart';
 
 /// A configurable middleware that adds a custom header and logs.
 Middleware myConfigurableMiddleware(String headerValue) {
@@ -397,7 +394,7 @@ rootRouter.mount('/my-api/', pipeline);
 Routes can also have their own specific middleware stack. Middlewares are passed in as a list, and priority is given by their order in the list (left to right).
 
 ```dart
-import 'package:aw_router/middleware/log_middleware.dart'; // For awrLogMiddleware
+import 'package:aw_router/aw_router.dart'; // For awrLogMiddleware
 
 // Priority: awrLogMiddleware -> myConfigurableMiddleware -> route handler
 router.get('/secure-page', middlewares: [
@@ -519,7 +516,7 @@ router.onError((AwRequest req, Object error, StackTrace stack) {
     The recommended way to inject a `Logger` is by adding `awrLogMiddleware()` to your middleware pipeline (e.g., globally or at a mount point). This middleware creates a `DefaultLogger` and places it in `request.context`.
 
     ```dart
-    import 'package:aw_router/middleware/log_middleware.dart';
+    import 'package:aw_router/aw_router.dart';
 
     // Global logger setup
     final rootRouter = Router(context);
@@ -553,8 +550,7 @@ router.onError((AwRequest req, Object error, StackTrace stack) {
     You can customize the `DefaultLogger`'s behavior (e.g., where it logs to) by providing custom `logFn` and `errorFn` callbacks to `awrLogMiddleware`. This is useful for integrating with external logging services or custom output formats.
 
     ```dart
-    import 'package:aw_router/logger/logger.dart'; // For LogLevel
-    import 'package:aw_router/middleware/log_middleware.dart';
+    import 'package:aw_router/aw_router.dart';
 
     void customLogFunction(String message) {
       // Send to a monitoring service, or a custom file, etc.
@@ -592,8 +588,7 @@ router.onError((AwRequest req, Object error, StackTrace stack) {
 The `awrWrapWithIntrospection` helper middleware allows you to easily monitor the execution flow and performance of other middlewares in your pipeline. It logs when a middleware is entered, exited, and how long it took. It also warns if a middleware "short-circuited" (didn't call the `next` handler).
 
 ```dart
-import 'package:aw_router/middleware.dart';
-import 'package:aw_router/middleware/middleware_helpers.dart'; // For awrWrapWithIntrospection
+import 'package:aw_router/aw_router.dart';
 
 // A simple example middleware to be wrapped
 Middleware myLoggingAuthMiddleware() {

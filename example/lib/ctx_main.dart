@@ -68,6 +68,6 @@ void main() async {
     final response = await router.call(request);
     print(response);
   } catch (e, st) {
-    router.log(e.toString());
+    router.log('$e\n$st');
   }
 }
