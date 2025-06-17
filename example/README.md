@@ -10,17 +10,32 @@ This repository demonstrates how to use `aw_router`, a lightweight and expressiv
 - Dart SDK (if testing locally)
 - An HTTP client (e.g. [Bruno](https://usebruno.com/), Postman, curl, Insomnia)
 
-### 1. Clone and Run the Example Locally
+### Running without an appwrite environment
 
 ```bash
-git clone <REPO_URL>
+git clone https://github.com/Weav3r/aw_router
+cd example
+dart pub get
+
+# run the example local file
+dart run lib/main.local.dart
+```
+
+
+
+### Running with an appwrite environment
+
+#### 1. Clone and Run the Example Locally
+
+```bash
+git clone https://github.com/Weav3r/aw_router
 cd example
 appwrite run function
 ```
 
 > u26A0uFE0F Ensure the CLI generates the correct local `host:port` for the function when using your HTTP client.
 
-### 2. Test the Routes
+#### 2. Test the Routes
 
 You can test routes using any HTTP client. For example, using curl:
 
