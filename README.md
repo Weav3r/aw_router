@@ -48,10 +48,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  aw_router:
-    git:
-      url: "https://github.com/Weav3r/aw_router.git"
-      version: "0.0.24" # or later
+  aw_router: ^0.1.0-beta
 ```
 
 ## Usage Example
