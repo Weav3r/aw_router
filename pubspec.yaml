@@ -1,7 +1,8 @@
 name: aw_router
-description: A starting point for Dart libraries or applications.
+description: A lightweight, composable, and middleware-friendly router designed for use with Appwrite Cloud Functions.
+repository: https://github.com/Weav3r/aw_router
+issue_tracker: https://github.com/Weav3r/aw_router/issues
 version: 0.0.24
-# repository: https://github.com/my_org/my_repo
 
 environment:
   sdk: ^3.3.0

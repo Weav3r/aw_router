@@ -627,7 +627,13 @@ final introspectedPipeline = Pipeline()
 
 ## Contributing
 
-We welcome contributions! Please follow these steps:
+#### Bug Reports & Feature Requests
+
+Please use the [issue tracker](https://github.com/Weav3r/aw_router/issues) to report any bugs or file feature requests.
+
+#### Developing
+
+PRs are welcome. To begin developing, do this:
 
 1.  Fork the repo and clone it locally.
 2.  Check out the `dev` branch.

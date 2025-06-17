@@ -1,6 +1,7 @@
 import 'logger.dart';
 
 enum LogLevel {
+  ///Mainly used to display noisy internal logs during development
   verbose,
   debug,
   info,
