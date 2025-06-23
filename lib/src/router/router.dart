@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../core/request_handler.dart';
 import '../utils/constants.dart';
 import '../extensions/request_logger.dart';
 import '../extensions/request_context.dart';
@@ -35,11 +36,11 @@ typedef ErrorHandler = FutureOr<AwResponse> Function(
 ///
 /// // Example middleware (replace with your actual auth middleware)
 /// Middleware authMiddleware = (handler) {
-///   return (Request request) async {
+///   return (AwRequest request) async {
 ///     // Your authentication logic here
-///     if (request.headers.containsKey('x-auth-token')) {
+///     if (Awrequest.headers.containsKey('x-auth-token')) {
 ///       print('AuthMiddleware: Token found, proceeding.');
-///       return handler(request);
+///       return handler(Awrequest);
 ///     } else {
 ///       print('AuthMiddleware: No token, unauthorized.');
 ///       return Response.unauthorized('Authentication required.');
@@ -94,7 +95,7 @@ typedef ErrorHandler = FutureOr<AwResponse> Function(
 ///   await for (var httpRequest in await server) {
 ///     // Convert HttpServerRequest to your Request object
 ///     final request = Request.fromHttp(httpRequest); // Assuming a converter
-///     final response = await router(request); // The router instance is callable
+///     final response = await router(Awrequest); // The router instance is callable
 ///     // Convert your Response object back to HttpServerResponse
 ///     response.sendToHttp(httpRequest.response); // Assuming a converter
 ///   }
@@ -190,44 +191,179 @@ class Router {
   /// mounted handler. The [prefix] must not contain any parameters.
   ///
   /// Throws [ArgumentError] if the [prefix] does not start with a slash.
-  void mount(
-    String prefix,
-    RequestHandler handler,
-  ) {
+  ///
+
+  void mossunt(String prefix, RequestHandler handler) {
     final normPrefix = normalizePath(prefix);
     if (!normPrefix.startsWith('/')) {
       throw ArgumentError.value(
           normPrefix, 'prefix', 'must start with a slash');
     }
-    // Wildcard mount for trailing slash (e.g., /products/ will match /products/123)
-    if (normPrefix.endsWith('/')) {
-      all('$normPrefix<path|[^]*>', (AwRequest request) {
-        var newPath = request.path.substring(normPrefix.length);
+
+    // Accept parameters in the prefix (e.g., /foo/<id|[0-9]+>/bar/)
+    // Build a regex to match the actual prefix, so we can slice the path accurately.
+    // Example: /foo/<id|[0-9]+>/bar/  =>  r'^/foo/([0-9]+)/bar/'
+    final paramRegex = RegExp(r'<(\w+)(?:\|([^>]+))?>');
+    String regexPattern = normPrefix.replaceAllMapped(paramRegex, (m) {
+      final param = m[1];
+      final regex = m[2] ?? '[^/]+';
+      return '($regex)';
+    });
+    if (!regexPattern.endsWith('/')) {
+      regexPattern += r'(?:/)?';
+    }
+    final matcher = RegExp('^$regexPattern');
+
+    all('$normPrefix<path|[^]*>', (AwRequest request) {
+      final match = matcher.firstMatch(request.path);
+      if (match == null) {
+        // Not a match, skip
+        return AwResponse.routeNotFound;
+      }
+      final matchedPrefix = match.group(0)!;
+      var newPath = request.path.substring(matchedPrefix.length);
+      if (!newPath.startsWith('/') && newPath.isNotEmpty) {
+        newPath = '/$newPath';
+      }
+      final nReq = request.copyWith(path: newPath);
+      return handler(nReq);
+    });
+  }
+
+  void mount(String prefix, RequestHandler handler) {
+    if (!prefix.startsWith('/')) {
+      throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
+    }
+
+    if (prefix.endsWith('/')) {
+      all('$prefix<path|[^]*>', (AwRequest request) {
+        var newPath = request.path.substring(prefix.length);
+        // var newPath = request.path;//.substring(prefix.length);
+        request.logInfo(
+            '@@@@@@@@@@@@@@@@@@@@@ ${request.routeParams}, prefix: $prefix || newPath: $newPath');
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
         }
+
         final nReq = request.copyWith(path: newPath);
         return handler(nReq);
       });
     } else {
-      // Exact match (e.g., /products will match /products)
-      all(normPrefix, (AwRequest request) {
-        var newPath = request.path.substring(normPrefix.length);
+      all(prefix, (AwRequest request) {
+        var newPath = request.path.substring(prefix.length);
+        // var newPath = request.path;//.substring(prefix.length);
+        request.logInfo(
+            '@@@@@@@@@@@@@@@@@@@@@ ${request.routeParams}, prefix: $prefix || newPath: $newPath');
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
         }
+
         return handler(request.copyWith(path: newPath));
       });
-      // Prefix match with trailing path (e.g., /products will also match /products/123)
-      all('$normPrefix/<path|[^]*>', (AwRequest request) {
-        var newPath = request.path.substring(normPrefix.length);
+
+      all('$prefix/<path|[^]*>', (AwRequest request) {
+        var newPath = request.path.substring(prefix.length);
+        // var newPath = request.path;//.substring(prefix.length);
+        request.logInfo(
+            '@@@@@@@@@@@@@@@@@@@@@ ${request.routeParams}, prefix: $prefix || newPath: $newPath');
         if (!newPath.startsWith('/')) {
           newPath = '/$newPath';
         }
+
         return handler(request.copyWith(path: newPath));
+
+        // return handler(request.copyWith(path: '$newPath/'));
       });
     }
   }
+
+  void smartMount(String prefix, Router subRouter) {
+    if (!prefix.startsWith('/')) {
+      throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
+    }
+
+    final normalizedPrefix = normalizePath(prefix);
+
+    all('$normalizedPrefix/<path|[^]*>', (req) {
+      final path = req.routeParams['path'];
+      final rewritten = req.copyWith(path: path ?? '');
+      return subRouter.call(rewritten);
+    });
+  }
+
+  /// Mounts a sub-router or handler at a dynamic or static prefix,
+  /// forwarding the remaining unmatched path as the request's new path.
+  ///
+  /// Example usage:
+  ///   mountWithRemainingPath(router, '/<userId|[a-z0-9]+>/posts/', (req) {
+  ///     final userId = req.routeParams['userId'];
+  ///     // req.routeParams['path'] is the rest after the prefix.
+  ///     final subRequest = req.copyWith(path: req.routeParams['path'] ?? '');
+  ///     return PostsRouter(userId).router.call(subRequest);
+  ///   });
+  void mountWithRemainingPath(
+      Router router, String prefix, RequestHandler handler) {
+    final normalizedPrefix = normalizePath(prefix);
+    // The trailing slash is optional; if missing, add both variants.
+    if (normalizedPrefix.endsWith('/')) {
+      router.all('$normalizedPrefix<path|[^]*>', (AwRequest req) {
+        final path = req.routeParams['path'] ?? '';
+        final subRequest = req.copyWith(path: path);
+        return handler(subRequest);
+      });
+    } else {
+      // Exact match (no remaining path)
+      router.all(normalizedPrefix, (AwRequest req) {
+        final subRequest = req.copyWith(path: '');
+        return handler(subRequest);
+      });
+      // Prefix match (with remaining path)
+      router.all('$normalizedPrefix/<path|[^]*>', (AwRequest req) {
+        final path = req.routeParams['path'] ?? '';
+        final subRequest = req.copyWith(path: path);
+        return handler(subRequest);
+      });
+    }
+  }
+
+  // void mountOrig(
+  //   String prefix,
+  //   RequestHandler handler,
+  // ) {
+  //   final normPrefix = normalizePath(prefix);
+  //   if (!normPrefix.startsWith('/')) {
+  //     throw ArgumentError.value(
+  //         normPrefix, 'prefix', 'must start with a slash');
+  //   }
+  //   // Wildcard mount for trailing slash (e.g., /products/ will match /products/123)
+  //   if (normPrefix.endsWith('/')) {
+  //     all('$normPrefix<path|[^]*>', (AwRequest request) {
+  //       var newPath = request.path.substring(normPrefix.length);
+  //       if (!newPath.startsWith('/')) {
+  //         newPath = '/$newPath';
+  //       }
+  //       final nReq = request.copyWith(path: newPath);
+  //       return handler(nReq);
+  //     });
+  //   } else {
+  //     // Exact match (e.g., /products will match /products)
+  //     all(normPrefix, (AwRequest request) {
+  //       var newPath = request.path.substring(normPrefix.length);
+  //       if (!newPath.startsWith('/')) {
+  //         newPath = '/$newPath';
+  //       }
+  //       return handler(Awrequest.copyWith(path: newPath));
+  //     });
+  //     // Prefix match with trailing path (e.g., /products will also match /products/123)
+  //     all('$normPrefix/<path|[^]*>', (AwRequest request) {
+  //       var newPath = request.path.substring(normPrefix.length);
+  //       if (!newPath.startsWith('/')) {
+  //         newPath = '/$newPath';
+  //       }
+  //       return handler(Awrequest.copyWith(path: newPath));
+  //     });
+  //   }
+  // }
 
   /// Handle all request to [path] using [handler]. Optional [middlewares]>
   /// can be applied to this specific route.
@@ -306,16 +442,18 @@ class Router {
       _fallbackLogger.verbose('Request path ${req.path}');
       _fallbackLogger.verbose('Normalised path $path');
       for (var entry in _mRoutes) {
-        _fallbackLogger.verbose('Checking $path against ${entry.route} ');
+        _fallbackLogger
+            .verbose('Checking ($method) $path against ${entry.route} ');
         if (entry.route.method != method.toUpperCase() &&
             entry.route.method != 'ALL') {
           continue;
-        } 
+        }
 
         var params = entry.match(path);
         if (params != null) {
           _fallbackLogger
               .verbose('Matched ${entry.route} with parameters $params');
+          // final updatedRequest = req.copyWith(routeParams: params, path: params['path']);
           final updatedRequest = req.copyWith(routeParams: params);
           final response = await entry.invoke(updatedRequest, params);
 
@@ -375,7 +513,6 @@ class Router {
   /// Handle `DELETE` request to [path] using [handler] with optinal [middlewares].
   void delete(String path, Function handler, {List<Middleware>? middlewares}) =>
       _add('DELETE', path, middlewares, handler);
-
 
   /// Handle `PATCH` requests to [path] using [handler] with optional [middlewares].
   void patch(String path, Function handler, {List<Middleware>? middlewares}) =>
