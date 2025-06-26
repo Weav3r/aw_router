@@ -284,6 +284,12 @@ class Router {
 
     final normalizedPrefix = normalizePath(prefix);
 
+    all(normalizedPrefix, (req) {
+      final path = req.routeParams['path'];
+      final rewritten = req.copyWith(path: path ?? '');
+      return subRouter.call(rewritten);
+    });
+
     all('$normalizedPrefix/<path|[^]*>', (req) {
       final path = req.routeParams['path'];
       final rewritten = req.copyWith(path: path ?? '');
