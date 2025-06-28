@@ -277,7 +277,7 @@ class Router {
     }
   }
 
-  void smartMount(String prefix, Router subRouter) {
+  void smartMount(String prefix, RequestHandler subRouterHandler) {
     if (!prefix.startsWith('/')) {
       throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
     }
@@ -287,13 +287,13 @@ class Router {
     all(normalizedPrefix, (req) {
       final path = req.routeParams['path'];
       final rewritten = req.copyWith(path: path ?? '');
-      return subRouter.call(rewritten);
+      return subRouterHandler(rewritten);
     });
 
     all('$normalizedPrefix/<path|[^]*>', (req) {
       final path = req.routeParams['path'];
       final rewritten = req.copyWith(path: path ?? '');
-      return subRouter.call(rewritten);
+      return subRouterHandler(rewritten);
     });
   }
 
