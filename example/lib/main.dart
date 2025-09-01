@@ -19,7 +19,7 @@ Future<dynamic> main(final context) async {
   try {
     // Create the root router instance.
     // final rootRouter = Router(context);
-    final rootRouter = Router(context, fallbackLogLevel: LogLevel.verbose);
+    final rootRouter = Router(context, fallbackLogLevel: LogLevel.warning);
 
     // Product routes with full middleware pipeline
     // Middleware includes: strip trailing slashes, logging, auth, and response wrapping

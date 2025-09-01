@@ -428,7 +428,6 @@ class Router {
     } else {
       req = request ?? AwRequest.parse(_context.req);
     }
-    // req.logDebug('Context path b4 injection ${_context.req.path}');
 
     // Inject fallback logger into request context if not already present
     final existingLogger = req.context[ctxLoggerKey];
@@ -442,42 +441,72 @@ class Router {
       );
     }
 
-    String path = normalizePath(req.path);
-    String method = req.method;
-    try {
-      _fallbackLogger.verbose('Request path ${req.path}');
-      _fallbackLogger.verbose('Normalised path $path');
-      for (var entry in _mRoutes) {
-        _fallbackLogger
-            .verbose('Checking ($method) $path against ${entry.route} ');
-        if (entry.route.method != method.toUpperCase() &&
-            entry.route.method != 'ALL') {
-          continue;
-        }
+    // Zone-scoped holder for freshest request
+    final ref = CurrentRequestRef(req);
+    AwResponse? finalResp;
 
-        var params = entry.match(path);
-        if (params != null) {
+    await runZonedGuarded(() async {
+      String path = normalizePath(req.path);
+      String method = req.method;
+      try {
+        _fallbackLogger.verbose('Request path ${req.path}');
+        _fallbackLogger.verbose('Normalised path $path');
+        for (var entry in _mRoutes) {
           _fallbackLogger
-              .verbose('Matched ${entry.route} with parameters $params');
-          // final updatedRequest = req.copyWith(routeParams: params, path: params['path']);
-          final updatedRequest = req.copyWith(routeParams: params);
-          final response = await entry.invoke(updatedRequest, params);
+              .verbose('Checking ($method) $path against ${entry.route} ');
+          if (entry.route.method != method.toUpperCase() &&
+              entry.route.method != 'ALL') {
+            continue;
+          }
 
-          if (response != AwResponse.routeNotFound) {
-            return response;
+          var params = entry.match(path);
+          if (params != null) {
+            _fallbackLogger
+                .verbose('Matched ${entry.route} with parameters $params');
+            // copyWith updates the zone-held latest request via request.copyWith
+            final updatedRequest = req.copyWith(routeParams: params);
+            final response = await entry.invoke(updatedRequest, params);
+
+            if (response != AwResponse.routeNotFound) {
+              finalResp = response;
+              return;
+            }
           }
         }
+        _fallbackLogger.verbose('No route found for path ${req.path}');
+        finalResp = await _notFoundHandler(req);
+      } catch (e, st) {
+        // Use the freshest request held in the Zone
+        final latest =
+            (Zone.current[zoneCurrentRequestRefKey] as CurrentRequestRef?)
+                    ?.current as AwRequest? ??
+                req;
+        latest.logError('Unhandled exception during request processing',
+            error: e, stackTrace: st);
+        if (_exceptionHandler != null) {
+          finalResp = await _exceptionHandler!(latest, e, st);
+        } else {
+          finalResp = AwResponse.internalServerError();
+        }
       }
-      _fallbackLogger.verbose('No route found for path ${req.path}');
-      return await _notFoundHandler(req);
-    } catch (e, st) {
-      req.logError('Unhandled exception during request processing',
+    }, (Object e, StackTrace st) async {
+      // Catch uncaught async errors in the router pipeline
+      final latest =
+          (Zone.current[zoneCurrentRequestRefKey] as CurrentRequestRef?)
+                  ?.current as AwRequest? ??
+              req;
+      latest.logError('Unhandled async exception in router zone',
           error: e, stackTrace: st);
       if (_exceptionHandler != null) {
-        return await _exceptionHandler!(req, e, st);
+        finalResp = await _exceptionHandler!(latest, e, st);
+      } else {
+        finalResp = AwResponse.internalServerError();
       }
-      return AwResponse.internalServerError();
-    }
+    }, zoneValues: {
+      zoneCurrentRequestRefKey: ref,
+    });
+
+    return finalResp!;
   }
 
   /// Sets the handler for requests that do not match any defined route.

@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:aw_router/aw_router.dart';
 import 'package:awr_example/extensions/mock_request.dart';
+import 'package:awr_example/routers/deep_nesting.dart';
 
 import 'middleware/auth.dart';
 import 'middleware/normalize_trailing_slash.dart';
 import 'middleware/response_wrapper.dart';
 import 'routers/product_router.dart';
-
 
 // To test this example locally, simply execute this Dart file with `dart run main.local.dart`.
 // No Appwrite function environment is needed.
@@ -25,7 +25,7 @@ void main() async {
 
   router.onError((request, error, stackTrace) {
     request.logError(
-        'An unhandled exception occurred during request processing for path: ${request.path}',
+        'An unhandled exception occurred during request processing for path: ${request.path}\nContext: ${request.context}',
         error: error,
         stackTrace: stackTrace);
     return AwResponse.internalServerError(
@@ -35,20 +35,22 @@ void main() async {
     }));
   });
 
-    final productPipeline = Pipeline()
-        .addMiddleware(awrWrapWithIntrospection(
-            awrLogMiddleware(
-                level: LogLevel.verbose,
-                logFn: router.log,
-                errorFn: router.error),
-            'awrLog'))
-        .addMiddleware(awrWrapWithIntrospection(
-            stripTrailingSlashMiddleware, 'stripTrailingSlash'))
-        .addMiddleware(awrWrapWithIntrospection(authMiddleware, 'auth'))
-        .addMiddleware(
-            awrWrapWithIntrospection(responseWrapperMiddleware, 'responseWrapper'))
-        .handler(ProductRouter().router.call);
+  // final dp = Pipeline().handler()
+  final productPipeline = Pipeline()
+      .addMiddleware(awrWrapWithIntrospection(
+          awrLogMiddleware(
+              level: LogLevel.verbose,
+              logFn: router.log,
+              errorFn: router.error),
+          'awrLog'))
+      .addMiddleware(awrWrapWithIntrospection(
+          stripTrailingSlashMiddleware, 'stripTrailingSlash'))
+      .addMiddleware(awrWrapWithIntrospection(authMiddleware, 'auth'))
+      .addMiddleware(awrWrapWithIntrospection(
+          responseWrapperMiddleware, 'responseWrapper'))
+      .handler(ProductRouter().router.call);
 
+  router.mount('/deep/', Deeper(null).router);
   // router.mount('/products', ProductRouter(null).router);
   router.mount('/products', productPipeline);
   router.get('/products/shoe', (req) {
@@ -56,11 +58,16 @@ void main() async {
   });
 
   router.get('/text/', middlewares: [awrLogMiddleware()], (AwRequest req) {
-    return AwResponse.ok('Hello, text world!', headers: {'myHeader':'Custom header value'});
+    return AwResponse.ok('Hello, text world!',
+        headers: {'myHeader': 'Custom header value'});
   });
 
   router.get('/trigger-error', (AwRequest req) {
     req.logInfo('Attempting to trigger an error...');
+          final modRequest = req.copyWith(context: {
+            ...req.context,
+            'action': 'SNEAKY SNEAKY!!!',
+          });
     throw Exception('Simulated Internal Server Error for /trigger-error');
   });
 
@@ -104,7 +111,7 @@ void main() async {
     // Nested Group: /api/v1/admin
     v1.group('/admin', middlewares: [
       awrWrapWithIntrospection(
-        // timeUnit: IntrospectionTimeUnit.microseconds,
+          // timeUnit: IntrospectionTimeUnit.microseconds,
           (handler) => (request) async {
                 request.logDebug('Middleware for /api/v1/admin group applied.');
                 // Simulate admin-specific auth check
@@ -132,32 +139,48 @@ void main() async {
     });
   });
 
-    router.get('/context-example', (AwRequest req) {
-      // Add data to the request context using string keys.
-      // Context data persists across middleware and handlers in the pipeline.
-      final reqWithAddedData = req
-          .withContext('myInternalData', 'Super important internal data')
-          .withContext('foo', 'some_value');
+  router.get('/context-example', (AwRequest req) {
+    // Add data to the request context using string keys.
+    // Context data persists across middleware and handlers in the pipeline.
+    final reqWithAddedData = req
+        .withContext('myInternalData', 'Super important internal data')
+        .withContext('foo', 'some_value');
 
-      // Retrieve data from the context.
-      final internalData = reqWithAddedData.context['myInternalData'];
-      final fooData = reqWithAddedData.context['foo'];
+    // Retrieve data from the context.
+    final internalData = reqWithAddedData.context['myInternalData'];
+    final fooData = reqWithAddedData.context['foo'];
 
-      // To "remove" data from the context, set its value to null.
-      final reqWithoutFoo = reqWithAddedData.removeContext('foo');
-      final fooDataAfterRemoval =
-          reqWithoutFoo.context['foo']; // This will now be null
+    // To "remove" data from the context, set its value to null.
+    final reqWithoutFoo = reqWithAddedData.removeContext('foo');
+    final fooDataAfterRemoval =
+        reqWithoutFoo.context['foo']; // This will now be null
 
-      req.logInfo('Internal data from context: $internalData');
-      req.logInfo('Foo data from context: $fooData');
-      req.logInfo('Foo data after removal: $fooDataAfterRemoval');
+    req.logInfo('Internal data from context: $internalData');
+    req.logInfo('Foo data from context: $fooData');
+    req.logInfo('Foo data after removal: $fooDataAfterRemoval');
 
-      // Modify the response as usual.
-      final res = AwResponse.ok("Context example response")
-          .modify(body: "Context handling demonstrated!", code: 200);
+    // Modify the response as usual.
+    final res = AwResponse.ok("Context example response")
+        .modify(body: "Context handling demonstrated!", code: 200);
 
-      return res;
-    });
+    return res;
+  });
+
+// String testPath = '/deep/38/users/somerando/role/boss';
+  // String testPath = '/deep/38/deeper/moe';
+  //  r.mountWithRemainingPath(r, '/<userId|[a-z0-9]+>/posts/', (req) {
+
+String testPath = '/deep/orgs/ACMEORG/dept/accounting/staff/mellisa/babesy//';
+  final dreq = mockRequest(
+    path: testPath,
+    // method: 'post',
+  );
+  final dres = await router.call(dreq);
+  router.log('GET $testPath Response: ${dres.statusCode} - ${dres.body}');
+  router.log('\n');
+
+  // return;
+  // return;
 
   final removetRequest = mockRequest(path: '/context-example');
   final removeResponse = await router.call(removetRequest);
@@ -181,12 +204,12 @@ void main() async {
   // return;
 
   final prodsHead = mockRequest(
-      method: 'head',
-      path: '/products/2',
+      // method: 'head',
+      path: '/products///2/',
       headers: {'authorization': 'valid-token'});
   final prodsHeadResponse = await router.call(prodsHead);
   router.log(
-      '${prods.method.toUpperCase()} ${prods.path} Response: ${prodsHeadResponse.statusCode} - ${prodsHeadResponse.body} == ${prodsHeadResponse.headers}');
+      '${prodsHead.method.toUpperCase()} ${prodsHead.path} Response: ${prodsHeadResponse.statusCode} - ${prodsHeadResponse.body} == ${prodsHeadResponse.headers}');
   router.log('\n');
 
   final userListRequest = mockRequest(path: '/api/v1/users');
@@ -200,7 +223,6 @@ void main() async {
   router.log(
       'GET /api/v1/admin/settings Response (with key): ${adminSettingsResponse.statusCode} - ${adminSettingsResponse.body}');
   router.log('\n');
-
 
   final unauthorizedAdminRequest = mockRequest(
       path: '/api/v1/admin/dashboard',
@@ -220,7 +242,6 @@ void main() async {
   router.log(
       'GET /api/v1/users/sammy/whoami Response (without key): ${usersBResponse.statusCode} - ${usersBResponse.body}');
   router.log('\n');
-
 
   final productByIdRequest = mockRequest(path: '/api/v1/products/123');
   final productByIdResponse = await router.call(productByIdRequest);

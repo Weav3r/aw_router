@@ -7,10 +7,15 @@ class UserRouter {
   UserRouter(this.context);
 
   awr.Router get router {
-    final r = awr.Router(context, fallbackLogLevel: awr.LogLevel.debug);
+    final r = awr.Router(context, fallbackLogLevel: awr.LogLevel.verbose);
 
     r.get('/me', (awr.AwRequest req) async {
       return awr.AwResponse.ok({'id': 'user-123', 'name': 'John Doe'});
+    });
+
+    r.get('/<name>/<nick|[a-z]+>', (awr.AwRequest req, String name, String nick) async {
+      req.logDebug('PAPAPRRRAMM: ${req.routeParams}');
+      return awr.AwResponse.ok({'id': 'user-999', 'name': name, 'nick': nick});
     });
 
 // Example requests:

@@ -15,6 +15,7 @@ void main() {
     });
 
     test('keeps trailing slash for <path| wildcard', () {
+      expect(normalizePath('/orgs/<orgId|[0-9]+>/'), '/orgs/<orgId|[0-9]+>');
       expect(normalizePath('/foo/<path|[^]*>/'), '/foo/<path|[^]*>/');
       expect(normalizePath('/foo/<path|[^]*/>'), '/foo/<path|[^]*/>');
       expect(normalizePath('/foo/<path|[^]*>'), '/foo/<path|[^]*>');

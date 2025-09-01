@@ -472,6 +472,10 @@ Middleware modifyMiddleware() {
 
 `aw_router` provides dedicated mechanisms for handling routes that don't match or for unhandled exceptions during request processing.
 
+Note: The router runs each request inside a Dart Zone and tracks the latest AwRequest. If middleware/handlers create new requests via `req.copyWith(...)`, the Zone keeps a reference to that latest instance. When `onError` is invoked, it receives this freshest request, even after awaits.
+
+Best practice: prefer `req.copyWith(...)` (or `req.withContext(...)`) when modifying a request inside the pipeline. Constructing `AwRequest(...)` manually won’t update the Zone-held reference.
+
 ### Custom 404 Not Found Handler
 
 Use `router.onNotFound()` to specify a custom handler for requests that don't match any registered route:

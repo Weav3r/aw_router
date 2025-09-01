@@ -1,6 +1,8 @@
 import 'dart:collection';
+import 'dart:async';
 
 import 'package:aw_router/src/utils/util.dart';
+import 'package:aw_router/src/utils/constants.dart';
 
 /// {@template my_request}
 /// A class that represents the request object.
@@ -113,7 +115,7 @@ class AwRequest {
     Map<String, dynamic>? context,
     Map<String, dynamic>? routeParams,
   }) {
-    return AwRequest(
+    final updated = AwRequest(
       bodyText: bodyText ?? this.bodyText,
       bodyJson: bodyJson ?? this.bodyJson,
       headers: headers ?? this.headers,
@@ -128,6 +130,13 @@ class AwRequest {
       context: _modifyContext(context), // context ?? this.context,
       routeParams: routeParams ?? _routeParams,
     );
+
+    // Update zone-scoped latest request holder if present
+    final holder = Zone.current[zoneCurrentRequestRefKey];
+    if (holder is CurrentRequestRef) {
+      holder.current = updated;
+    }
+    return updated;
   }
 
   @override
