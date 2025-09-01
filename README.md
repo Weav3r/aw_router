@@ -245,13 +245,36 @@ rootRouter.mount('/products/', ProductRouter(context).router.call); // Mount ano
 
 > Each mounted `router` can have its own [middleware](#middleware) stack, applied via a `Pipeline` before mounting.
 
+Notes:
+- Supports static and dynamic prefixes (e.g., `/api`, `/api/`, `/orgs/<orgId|[0-9]+>/`).
+- Forwarded sub-path semantics:
+  - Exact match of the mount prefix forwards an empty `''` as the new `req.path`.
+  - If there is a remainder, it is forwarded with a leading slash, e.g. `'/rest'`.
+- Single mounting API: use `mount(String prefix, RequestHandler handler)` to mount handlers or pipelines. For mounting a `Router` instance, pass its `.call` method: `mount(prefix, subRouter.call)`.
+- Removed legacy wrappers: `smartMount`, `mossunt`, `mountWithRemainingPath`, and `mountRouter` have been removed in favor of the unified `mount` API. Use `mount(prefix, handler)` instead.
+
+Migration:
+- Replace `smartMount(prefix, handler)` with `mount(prefix, handler)`.
+- Replace `mossunt(prefix, handler)` with `mount(prefix, handler)`.
+- Replace `mountWithRemainingPath(router, prefix, handler)` with `router.mount(prefix, handler)` or `mount(prefix, router.call)`.
+- Replace `mountRouter(prefix, subRouter)` with `mount(prefix, subRouter.call)`.
+
+Example: dynamic prefix with captured params
+
+```dart
+rootRouter.mount('/orgs/<orgId|[0-9]+>/', (AwRequest subReq) async {
+  // subReq.path is '' on exact '/orgs/123', or the remainder like '/repos'
+  final orgId = subReq.routeParams['orgId'];
+  // delegate to a sub-router or handle directly
+  return AwResponse.ok({'orgId': orgId, 'forwardedPath': subReq.path});
+});
+```
+
 ---
 
 ## Grouping Routes
 
 The `router.group()` method allows you to organize routes under a common URL prefix and apply shared middlewares to them. This helps in building a cleaner, more modular API structure by reducing repetitive path definitions and middleware assignments.
-
-The `builder` function passed to `group` receives a new `Router` instance (a special "grouped" router) where all paths you define will automatically be prepended with the group's prefix. Any `middlewares` provided to `group` will run _before_ any route-specific middlewares defined within that group.
 
 ```dart
 final apiRouter = Router(context);

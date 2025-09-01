@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:aw_router/aw_router.dart';
+import 'package:aw_router/src/utils/util.dart' show normalizePath;
 
 typedef RequestHandler = FutureOr<AwResponse> Function(AwRequest req);
 

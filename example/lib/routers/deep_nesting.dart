@@ -35,7 +35,7 @@ class Deeper {
     });
 
     // r.smartMount('/<he|[0-9]+>/users/', UserRouter(context).router);
-    r.smartMount('/orgs/<orgId>/dept/<deptId>/staff/', UserRouter(context).router);
+    r.mount('/orgs/<orgId>/dept/<deptId>/staff/', UserRouter(context).router.call);
   //  r.mountWithRemainingPath(r, '/orgs/<orgId>/dept/<deptId>/staff/', (req) {
   //    final orgd = req.routeParams['orgId'];
   //    req.logInfo('ORG ID:========================>>>>> $orgd');
